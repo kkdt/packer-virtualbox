@@ -1,0 +1,12 @@
+---
+packages:
+  - "kernel"
+  - "kernel-headers"
+  - "kernel-firmware"
+  - "kernel-devel"
+  - "tar"
+  - "bzip2"
+  - "perl"
+  - "gcc"
+  - "make"
+  - "elfutils-libelf-devel"

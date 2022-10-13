@@ -1,0 +1,16 @@
+{
+  "Name": "${vm_id}",
+  "Build Version": "${build_version}",
+  "Build By": "${build_by}",
+  "Build Date": "${build_date}",
+  "Builder": "${builder_info}",
+  "vm_disk_size": "${vm_disk_size} MB",
+  "vm_guest_os_family": "${vm_guest_os_family}",
+  "vm_guest_os_name": "${vm_guest_os_name}",
+  "vm_guest_os_version": "${vm_guest_os_version}",
+  "iso_file": "${iso_file}",
+  "iso_checksum_value": "${iso_checksum_value}",
+  "Git Branch": "${git_branch}",
+  "Git Commit": "${git_commit}",
+  "Git Remote URL": "${git_remote_url}"
+}

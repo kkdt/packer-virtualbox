@@ -7,8 +7,6 @@
 **/*.cer
 **/*.crt
 **/*.p7b
-## Ignore public key files
-**/*.pub
 
 # HashiCorp Packer
 ## Ignore cache directories.
@@ -50,3 +48,9 @@ artifacts/*.vmdk
 # Manifests
 ## Ignore manifests directory.
 manifests/*.json
+
+*.iml
+config
+dist
+.vagrant
+*.log

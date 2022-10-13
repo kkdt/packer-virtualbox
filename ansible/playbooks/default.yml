@@ -1,0 +1,40 @@
+---
+- name: Red Hat Registration
+  hosts: all
+  become: yes
+  become_method: sudo
+  gather_facts: no
+  tasks:
+    - name: Register as user with password, random string subscription name
+      community.general.redhat_subscription:
+        state: present
+        username: "{{ rhsm_username }}"
+        password: "{{ rhsm_password }}"
+        consumer_name: "{{ query('community.general.random_string', upper=true, numbers=false, special=false) }}"
+        auto_attach: true
+      when: (rhsm_username is defined) and (rhsm_username|length > 0) and (rhsm_password is defined) and (rhsm_password|length > 0)
+
+- name: Default provisioning
+  hosts: all
+  become: yes
+  become_method: sudo
+  gather_facts: yes
+  roles:
+    - role: vagrant
+    - role: virtualbox-guest-additions
+#    - role: base
+    - role: configure
+    - role: clean
+
+- name: Red Hat Registration
+  hosts: all
+  become: yes
+  become_method: sudo
+  gather_facts: no
+  tasks:
+    - name: Unregister as user with password
+      community.general.redhat_subscription:
+        state: absent
+        username: "{{ rhsm_username }}"
+        password: "{{ rhsm_password }}"
+      when: (rhsm_username is defined) and (rhsm_username|length > 0) and (rhsm_password is defined) and (rhsm_password|length > 0)

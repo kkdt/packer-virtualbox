@@ -1,0 +1,44 @@
+---
+
+- name: Create group
+  become: true
+  ansible.builtin.group:
+    name: "{{ vagrant.group }}"
+    state: present
+
+- name: Create user
+  become: true
+  ansible.builtin.user:
+    name: "{{ vagrant.username }}"
+    password: "{{ vagrant.password }}"
+    shell: /bin/bash
+    group: "{{ vagrant.group }}"
+    expires: -1
+    password_expire_max: -1
+
+- name: Add to sudoers
+  become: true
+  community.general.sudoers:
+    name: "{{ vagrant.username }}"
+    state: present
+    user: "{{ vagrant.username }}"
+    commands: ALL
+    nopassword: true
+
+- name: Create SSH directory
+  become: true
+  ansible.builtin.file:
+    path: /home/vagrant/.ssh
+    owner: "{{ vagrant.username }}"
+    group: "{{ vagrant.group }}"
+    state: directory
+    mode: 0700
+
+- name: Create insecure SSH key
+  become: true
+  ansible.builtin.copy:
+    src: authorized_keys
+    dest: /home/vagrant/.ssh/authorized_keys
+    owner: "{{ vagrant.username }}"
+    group: "{{ vagrant.group }}"
+    mode: 0600

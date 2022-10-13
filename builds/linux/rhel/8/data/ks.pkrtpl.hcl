@@ -31,16 +31,17 @@ keyboard ${vm_guest_os_keyboard}
 network --bootproto=dhcp
 
 ### Lock the root account.
-rootpw --lock
+rootpw --iscrypted ${root_password_encrypted}
 
-### The selected profile will restrict root login.
-### Add a user that can login and escalate privileges.
-user --name=${build_username} --iscrypted --password=${build_password_encrypted} --groups=wheel
+%{ if build_username != "" && build_username != "root" ~}
+user --groups=wheel --iscrypted --name=${build_username} --password=${build_password_encrypted}
+%{ endif ~}
+
 
 ### Configure firewall settings for the system.
 ### --enabled	reject incoming connections that are not in response to outbound requests
 ### --ssh		allow sshd service through the firewall
-firewall --enabled --ssh
+firewall --disabled
 
 ### Sets up the authentication options for the system.
 ### The SSDD profile sets sha512 to hash passwords. Passwords are shadowed by default
@@ -48,8 +49,7 @@ firewall --enabled --ssh
 authselect select sssd
 
 ### Sets the state of SELinux on the installed system.
-### Defaults to enforcing.
-selinux --enforcing
+selinux --disabled
 
 ### Sets the system time zone.
 timezone ${vm_guest_os_timezone}
@@ -58,57 +58,129 @@ timezone ${vm_guest_os_timezone}
 bootloader --location=mbr
 
 ### Initialize any invalid partition tables found on disks.
+ignoredisk --only-use=sda
 zerombr
 
 ### Removes partitions from the system, prior to creation of new partitions. 
 ### By default, no partitions are removed.
 ### --linux	erases all Linux partitions.
 ### --initlabel Initializes a disk (or disks) by creating a default disk label for all disks in their respective architecture.
-clearpart --all --initlabel
+clearpart --linux --initlabel
 
-### Modify partition sizes for the virtual machine hardware.
-### Create primary system partitions.
-part /boot --fstype xfs --size=1024 --label=BOOTFS
-part /boot/efi --fstype vfat --size=1024 --label=EFIFS
-part pv.01 --size=100 --grow
+# Create primary system partitions (required for installs)
+part /boot --fstype=${vm_disk_partitions.boot.fstype} --size=${vm_disk_partitions.boot.size} --fsoptions="${vm_disk_partitions.boot.fsoptions}" --label=${vm_disk_partitions.boot.label}
+part ${vm_disk_partitions.pv.label} --grow --size=${vm_disk_partitions.pv.size}
 
-### Create a logical volume management (LVM) group.
-volgroup sysvg --pesize=4096 pv.01
+# Create a Logical Volume Management (LVM) group (optional)
+volgroup ${vm_volgroup.name} --pesize=${vm_volgroup.pesize} ${vm_volgroup.partition_name}
 
-### Modify logical volume sizes for the virtual machine hardware.
-### Create logical volumes.
-logvol swap --fstype swap --name=lv_swap --vgname=sysvg --size=1024 --label=SWAPFS
-logvol / --fstype xfs --name=lv_root --vgname=sysvg --size=12288 --label=ROOTFS
-logvol /home --fstype xfs --name=lv_home --vgname=sysvg --size=4096 --label=HOMEFS --fsoptions="nodev,nosuid"
-logvol /opt --fstype xfs --name=lv_opt --vgname=sysvg --size=2048 --label=OPTFS --fsoptions="nodev"
-logvol /tmp --fstype xfs --name=lv_tmp --vgname=sysvg --size=4096 --label=TMPFS --fsoptions="nodev,noexec,nosuid"
-logvol /var --fstype xfs --name=lv_var --vgname=sysvg --size=4096 --label=VARFS --fsoptions="nodev"
-logvol /var/log --fstype xfs --name=lv_log --vgname=sysvg --size=4096 --label=LOGFS --fsoptions="nodev,noexec,nosuid"
-logvol /var/log/audit --fstype xfs --name=lv_audit --vgname=sysvg --size=4096 --label=AUDITFS --fsoptions="nodev,noexec,nosuid"
+# Create particular logical volumes (optional)
+logvol ${vm_logical_volumes.root.mount} --fstype=${vm_logical_volumes.root.fstype} --name=${vm_logical_volumes.root.name} --vgname=${vm_volgroup.name} --size=${vm_logical_volumes.root.size} %{ if vm_logical_volumes.root.grow ~} --grow %{ endif ~} %{ if vm_logical_volumes.root.fsoptions != "" ~} --fsoptions="${vm_logical_volumes.root.fsoptions}" %{ endif ~}
 
-### Modifies the default set of services that will run under the default runlevel.
-services --enabled=NetworkManager,sshd
+# Ensure /home Located On Separate Partition
+logvol ${vm_logical_volumes.home.mount} --fstype=${vm_logical_volumes.home.fstype} --name=${vm_logical_volumes.home.name} --vgname=${vm_volgroup.name} --size=${vm_logical_volumes.home.size} %{ if vm_logical_volumes.home.grow ~} --grow %{ endif ~} %{ if vm_logical_volumes.home.fsoptions != "" ~} --fsoptions="${vm_logical_volumes.home.fsoptions}" %{ endif ~}
 
-### Do not configure X on the installed system.
-skipx
+# Ensure /tmp Located On Separate Partition
+logvol ${vm_logical_volumes.tmp.mount} --fstype=${vm_logical_volumes.tmp.fstype} --name=${vm_logical_volumes.tmp.name} --vgname=${vm_volgroup.name} --size=${vm_logical_volumes.tmp.size} %{ if vm_logical_volumes.tmp.grow ~} --grow %{ endif ~} %{ if vm_logical_volumes.tmp.fsoptions != "" ~} --fsoptions="${vm_logical_volumes.tmp.fsoptions}" %{ endif ~}
+
+# Ensure /var Located On Separate Partition
+logvol ${vm_logical_volumes.var.mount} --fstype=${vm_logical_volumes.var.fstype} --name=${vm_logical_volumes.var.name} --vgname=${vm_volgroup.name} --size=${vm_logical_volumes.var.size} %{ if vm_logical_volumes.var.grow ~} --grow %{ endif ~} %{ if vm_logical_volumes.var.fsoptions != "" ~} --fsoptions="${vm_logical_volumes.var.fsoptions}" %{ endif ~}
+
+# swap volumn group
+logvol swap --name=swap --vgname=${vm_volgroup.name} --size=${vm_swap_size}
 
 ### Packages selection.
 %packages --ignoremissing --excludedocs
-@core
--iwl*firmware
+
+%{ for common_package in os_packages ~}
+${common_package}
+%{ endfor ~}
+
+%{ for package in vm_packages ~}
+${package}
+%{ endfor ~}
+
 %end
 
 ### Post-installation commands.
-%post
-/usr/sbin/subscription-manager register --username ${rhsm_username} --password ${rhsm_password} --autosubscribe --force
-/usr/sbin/subscription-manager repos --enable "codeready-builder-for-rhel-8-x86_64-rpms"
-dnf install -y https://dl.fedoraproject.org/pub/epel/epel-release-latest-8.noarch.rpm
-dnf makecache
-dnf install -y sudo open-vm-tools perl
+%post --log=/root/kickstart-post.log
+echo "Updating /etc/ssh/sshd_config to allow root login"
+sed -i 's/PermitRootLogin no/PermitRootLogin yes/g' /etc/ssh/sshd_config
+
+%{ if build_username != "" && build_username != "root" ~}
 echo "${build_username} ALL=(ALL) NOPASSWD: ALL" >> /etc/sudoers.d/${build_username}
+%{ endif ~}
 sed -i "s/^.*requiretty/#Defaults requiretty/" /etc/sudoers
 %end
 
 ### Reboot after the installation is complete.
 ### --eject attempt to eject the media before rebooting.
-reboot --eject
+${vm_reboot_halt_shutdown_command}
+
+%post --nochroot --log=/mnt/sysimage/root/kickstart.log
+/usr/bin/cp /tmp/kickstart-*.log /mnt/sysimage/root/.
+
+echo "Finding the DVD media.repo"
+find / -type f -name "media.repo"
+echo "done."
+echo ""
+
+%{ if build_with_dvd_contents ~}
+mkdir -p /mnt/sysimage/repos/dvd
+
+media_repo=$(find / -type f -name "media.repo")
+if [ ! -z  "$media_repo" ]; then
+  ls -lart $(dirname $media_repo)
+  echo ""
+  echo "Installing DVD contents"
+  cp -a /run/install/repo/.treeinfo /mnt/sysimage/repos/dvd/.
+  cp -a /run/install/repo/RPM-GPG-* /mnt/sysimage/repos/dvd/.
+  cp -a /run/install/repo/BaseOS /mnt/sysimage/repos/dvd/.
+  cp -a /run/install/repo/AppStream /mnt/sysimage/repos/dvd/.
+  echo "done."
+  echo ""
+  echo "Installing repo files"
+  echo "[BaseOS]" >> /mnt/sysimage/etc/yum.repos.d/dvd.repo
+  echo "name=RHEL Local - BaseOS" >> /mnt/sysimage/etc/yum.repos.d/dvd.repo
+  echo "mediaid=None" >> /mnt/sysimage/etc/yum.repos.d/dvd.repo
+  echo "metadata_expire=-1" >> /mnt/sysimage/etc/yum.repos.d/dvd.repo
+  echo "gpgcheck=1" >> /mnt/sysimage/etc/yum.repos.d/dvd.repo
+  echo "cost=500" >> /mnt/sysimage/etc/yum.repos.d/dvd.repo
+  echo "enabled=1" >> /mnt/sysimage/etc/yum.repos.d/dvd.repo
+  echo "baseurl=file:///repos/dvd/BaseOS" >> /mnt/sysimage/etc/yum.repos.d/dvd.repo
+  echo "gpgkey=file:///repos/dvd/RPM-GPG-KEY-redhat-release" >> /mnt/sysimage/etc/yum.repos.d/dvd.repo
+  echo "" >> /mnt/sysimage/etc/yum.repos.d/dvd.repo
+  echo "[AppStream]" >> /mnt/sysimage/etc/yum.repos.d/dvd.repo
+  echo "name=RHEL Local - AppStream" >> /mnt/sysimage/etc/yum.repos.d/dvd.repo
+  echo "mediaid=None" >> /mnt/sysimage/etc/yum.repos.d/dvd.repo
+  echo "metadata_expire=-1" >> /mnt/sysimage/etc/yum.repos.d/dvd.repo
+  echo "gpgcheck=1" >> /mnt/sysimage/etc/yum.repos.d/dvd.repo
+  echo "cost=500" >> /mnt/sysimage/etc/yum.repos.d/dvd.repo
+  echo "enabled=1" >> /mnt/sysimage/etc/yum.repos.d/dvd.repo
+  echo "baseurl=file:///repos/dvd/AppStream" >> /mnt/sysimage/etc/yum.repos.d/dvd.repo
+  echo "gpgkey=file:///repos/dvd/RPM-GPG-KEY-redhat-release" >> /mnt/sysimage/etc/yum.repos.d/dvd.repo
+  echo "done."
+  echo ""
+else
+  echo "Cannot find media.repo"
+fi
+%{ endif ~}
+
+%end
+
+%pre --log=/tmp/kickstart-pre.log
+echo "Current mounts"
+df -h
+echo "done."
+echo ""
+
+echo "Current filesytem /"
+ls -lart /
+echo "done."
+echo ""
+
+echo "Finding the DVD media.repo"
+find / -type f -name "media.repo"
+echo "done."
+echo ""
+%end

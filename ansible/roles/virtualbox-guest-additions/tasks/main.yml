@@ -1,0 +1,11 @@
+---
+- name: Install Packages for VirtualBox Guest Additions
+  become: true
+  ansible.builtin.package:
+    name: "{{ packages }}"
+    state: latest
+
+- name: Guest additions
+  become: true
+  ansible.builtin.script:
+    cmd: install-guest-additions.sh

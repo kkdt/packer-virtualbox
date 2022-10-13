@@ -9,6 +9,7 @@
   shell: |
     cat /dev/null > /etc/hostname
     hostnamectl set-hostname localhost
+  when: "ansible_facts['distribution_major_version'] >= \"7\""
   args:
     warn: false
 - name: "Disabling SELinux."
@@ -19,6 +20,7 @@
 - name: "Restarting the SSH daemon."
   shell: |
     sudo systemctl restart sshd
+  when: "ansible_facts['distribution_major_version'] >= \"7\""
   args:
     warn: false
 - name: "Unregistering from Red Hat Subscription Manager."
