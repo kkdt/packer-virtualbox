@@ -57,6 +57,35 @@ ${common_package}
 ${package}
 %{ endfor ~}
 
+# Get group identifier: yum grouplist -v
+# https://access.redhat.com/solutions/5238
+
+%{ if vm_desktop_environment == "minimal" ~}
+# Desktop
+@basic-desktop
+# X Window System
+@x11
+# Fonts
+@fonts
+%{ endif ~}
+
+%{ if vm_desktop_environment == "recommended" ~}
+# Desktop
+@basic-desktop
+# General Purpose Desktop
+@general-desktop
+# Desktop Platform
+@desktop-platform
+# X Window System
+@x11
+# Internet Browser
+@internet-browser
+# Graphical Administration Tools
+@graphical-admin-tools
+# Fonts
+@fonts
+%{ endif ~}
+
 %end
 
 # Section: post
@@ -65,7 +94,6 @@ ${package}
 echo "Updating /etc/ssh/sshd_config to allow root login"
 sed -i 's/PermitRootLogin no/PermitRootLogin yes/g' /etc/ssh/sshd_config
 sed -i 's/#PermitRootLogin yes/PermitRootLogin yes/g' /etc/ssh/sshd_config
-sed -i 's/id:5:initdefault:/id:3:initdefault:/g' /etc/inittab
 
 %{ if build_username != "" && build_username != "root" ~}
 echo "Installing sudoers"

@@ -1,6 +1,7 @@
 # HashiCorp Packer, Oracle VirtualBox, and Vagrant Build Virtual Machine Images
 
 > All credits go to the VMware Open Source team for providing the foundation for infrastructure-as-code to automate the creation of virtual machine images in [packer-examples-for-vsphere][packer-examples-for-vsphere].
+> This project will no longer receive updates from the parent fork past commit [1472998](https://github.com/kkdt/packer-virtualbox/commit/147299898a844cdd9e64b93a05591ba5f427badc). 
 
 ## Table of Contents
 

@@ -1,12 +1,14 @@
 variable "rhsm_username" {
   type = string
   description = "Red Hat Subscription Manager username"
+  sensitive = true
   default = ""
 }
 
 variable "rhsm_password" {
   type = string
   description = "Red Hat Subscription Manager password"
+  sensitive = true
   default = ""
 }
 
@@ -31,11 +33,13 @@ variable "vm_guest_os_timezone" {
 variable "vm_guest_os_family" {
   type = string
   description = "The guest operating system family. Used for naming and VMware tools. (e.g. 'linux')"
+  default = "linux"
 }
 
 variable "vm_guest_os_name" {
   type = string
   description = "The guest operating system name. Used for naming . (e.g. 'rhel')"
+  default = "rhel"
 }
 
 variable "vm_guest_os_version" {
@@ -71,6 +75,12 @@ variable "vm_hostname" {
   type = string
   description = "Fully-qualified hostname"
   default = "localhost"
+}
+
+variable vm_desktop_environment {
+  type = string
+  description = "Desktop environment: minimal|recommended (default empty string)"
+  default = ""
 }
 
 variable "vm_disk_partitions" {
@@ -161,6 +171,7 @@ variable "iso_checksum_value" {
 variable "vm_boot_wait" {
   type = string
   description = "The time to wait before boot."
+  default = "10s"
 }
 
 variable "vm_reboot_halt_shutdown_command" {
@@ -172,6 +183,7 @@ variable "vm_reboot_halt_shutdown_command" {
 variable "common_shutdown_timeout" {
   type = string
   description = "Time to wait for guest operating system shutdown."
+  default = "1h30m"
 }
 
 variable "root_password" {
@@ -217,16 +229,19 @@ variable "build_key" {
   type = string
   description = "The public key to login to the guest operating system."
   sensitive = true
+  default = ""
 }
 
 variable "communicator_port" {
   type = string
   description = "The port for the communicator protocol."
+  default = 22
 }
 
 variable "communicator_timeout" {
   type = string
   description = "The timeout for the communicator protocol."
+  default = "30m"
 }
 
 variable "os_packages" {

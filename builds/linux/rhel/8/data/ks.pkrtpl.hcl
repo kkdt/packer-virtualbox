@@ -100,6 +100,16 @@ ${common_package}
 ${package}
 %{ endfor ~}
 
+# Get group identifier: yum grouplist -v
+# https://access.redhat.com/solutions/5238 - Red Hat 8 only has "recommended" desktop environment
+
+%{ if vm_desktop_environment == "recommended" || vm_desktop_environment == "minimal" ~}
+# Server with GUI
+@graphical-server-environment
+# Graphical Administration Tools
+@graphical-admin-tools
+%{ endif ~}
+
 %end
 
 ### Post-installation commands.
@@ -111,6 +121,11 @@ sed -i 's/PermitRootLogin no/PermitRootLogin yes/g' /etc/ssh/sshd_config
 echo "${build_username} ALL=(ALL) NOPASSWD: ALL" >> /etc/sudoers.d/${build_username}
 %{ endif ~}
 sed -i "s/^.*requiretty/#Defaults requiretty/" /etc/sudoers
+
+%{ if vm_desktop_environment == "recommended" || vm_desktop_environment == "minimal" ~}
+echo "Set the system to boot directly into the GUI"
+systemctl set-default graphical.target
+%{ endif ~}
 %end
 
 ### Reboot after the installation is complete.

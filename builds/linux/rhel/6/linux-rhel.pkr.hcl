@@ -32,7 +32,8 @@ locals {
       vm_swap_size = var.vm_swap_size,
       vm_logical_volumes = var.vm_logical_volumes,
       vm_hostname = var.vm_hostname,
-      build_with_dvd_contents = var.build_with_dvd_contents
+      build_with_dvd_contents = var.build_with_dvd_contents,
+      vm_desktop_environment = var.vm_desktop_environment
     })
   }
   build_info_content = templatefile("${abspath(path.cwd)}/builds/info.pkrtpl.json", {
