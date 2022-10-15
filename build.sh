@@ -5,852 +5,233 @@
 # COPYRIGHT HOLDERS BE LIABLE FOR ANY CLAIM, DAMAGES OR OTHER LIABILITY, WHETHER IN AN ACTION OF CONTRACT, TORT OR
 # OTHERWISE, ARISING FROM, OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.
 
+function help() {
+  echo "build.sh [options]"
+  echo "  --secrets          An externalized HCL variable file containing plain-text secrets"
+  echo "  --configs          (optional) Path to directory containing configurations"
+  echo "  --output-directory (optional) Full path to the output directory, default ./dist"
+  echo "  --os               (optional) OS identifier"
+  echo "  --details          (optional) Include additional metadata for the box image"
+}
+
 set -e
 
-follow_link() {
-  FILE="$1"
-  while [ -h "$FILE" ]; do
-    # On Mac OS, readlink -f doesn't work.
-    FILE="$(readlink "$FILE")"
-  done
-  echo "$FILE"
-}
+__directory="$(readlink -f "$(dirname "${BASH_SOURCE[0]}")")"
+__include_details=""
+__input_path=""
+__input_os=""
+__output_directory="${__directory}/dist"
+__configs=""
+__builder_info=""
+__secrets=""
+__var_files=""
+__var_files_overrides="
+build.pkrvars.hcl
+vm.pkrvars.hcl
+virtualbox.pkrvars.hcl
+"
 
-SCRIPT_PATH=$(realpath "$(dirname "$(follow_link "$0")")")
-CONFIG_PATH=$(realpath "${1:-${SCRIPT_PATH}/config}")
+while [ "$1" != "" ]; do
+  case "$1" in
+  --secrets)
+    shift
+    __secrets="${1}"
+    ;;
 
-menu_option_1() {
-  INPUT_PATH="$SCRIPT_PATH"/builds/linux/photon/4/
-  echo -e "\nCONFIRM: Build a VMware Photon OS 4 Template for VMware vSphere?"
-  echo -e "\nContinue? (y/n)"
-  read -r REPLY
-  if [[ ! $REPLY =~ ^[Yy]$ ]]
-  then
+  --os)
+    shift
+    case "$1" in
+    rhel8.5)
+      __input_path="${__directory}/builds/linux/rhel/8/"
+      __input_os="$1"
+      __var_files="-var-file=${__input_path}/versions/rhel8.5.pkrvars.hcl"
+      ;;
+    rhel8.6)
+      __input_path="${__directory}/builds/linux/rhel/8/"
+      __input_os="$1"
+      __var_files="-var-file=${__input_path}/versions/rhel8.6.pkrvars.hcl"
+      ;;
+    rhel6.7)
+      __input_path="${__directory}/builds/linux/rhel/6/"
+      __input_os="$1"
+      __var_files="-var-file=${__input_path}/versions/rhel6.7.pkrvars.hcl"
+      ;;
+    rhel6.9)
+      __input_path="${__directory}/builds/linux/rhel/6/"
+      __input_os="$1"
+      __var_files="-var-file=${__input_path}/versions/rhel6.9.pkrvars.hcl"
+      ;;
+    *)
+      echo "Invalid OS: $1"
+      exit 1
+      ;;
+    esac
+    ;;
+
+  --details)
+    __include_details="true"
+    ;;
+
+  --output-directory)
+    shift
+    if [ -e "$1" ]; then
+      __output_directory="${1}"
+    else
+      echo "Error: Invalid output directory $1"
+      exit 1
+    fi
+    ;;
+
+  --configs)
+    shift
+    if [ ! -d "${__configs}" ]; then
+      __configs="${1}"
+    else
+      echo "Error: Invalid configuration directory $1"
+      exit 1
+    fi
+    ;;
+
+  h|-h|--h|help|-help|--help)
+    help
+    exit 0
+    ;;
+
+  *)
+    echo "Error: Invalid argument $1"
+    help
     exit 1
-  fi
-
-  ### Build a VMware Photon OS 4 Template for VMware vSphere. ###
-  echo "Building a VMware Photon OS 4 Template for VMware vSphere..."
-
-  ### Initialize HashiCorp Packer and required plugins. ###
-  echo "Initializing HashiCorp Packer and required plugins..."
-  packer init "$INPUT_PATH"
-
-  ### Start the Build. ###
-  echo "Starting the build...."
-  packer build -force \
-      -var-file="$CONFIG_PATH/vsphere.pkrvars.hcl" \
-      -var-file="$CONFIG_PATH/build.pkrvars.hcl" \
-      -var-file="$CONFIG_PATH/ansible.pkrvars.hcl" \
-      -var-file="$CONFIG_PATH/proxy.pkrvars.hcl" \
-      -var-file="$CONFIG_PATH/common.pkrvars.hcl" \
-      "$INPUT_PATH"
-
-  ### All done. ###
-  echo "Done."
-}
-
-menu_option_2() {
-  INPUT_PATH="$SCRIPT_PATH"/builds/linux/debian/11/
-  echo -e "\nCONFIRM: Build a Debian 11 Template for VMware vSphere?"
-  echo -e "\nContinue? (y/n)"
-  read -r REPLY
-  if [[ ! $REPLY =~ ^[Yy]$ ]]
-  then
-    exit 1
-  fi
-
-  ### Build a Debian 11 Template for VMware vSphere. ###
-  echo "Building a Debian 11 Template for VMware vSphere..."
-
-  ### Initialize HashiCorp Packer and required plugins. ###
-  echo "Initializing HashiCorp Packer and required plugins..."
-  packer init "$INPUT_PATH"
-
-  ### Start the Build. ###
-  echo "Starting the build...."
-  packer build -force \
-      -var-file="$CONFIG_PATH/vsphere.pkrvars.hcl" \
-      -var-file="$CONFIG_PATH/build.pkrvars.hcl" \
-      -var-file="$CONFIG_PATH/ansible.pkrvars.hcl" \
-      -var-file="$CONFIG_PATH/proxy.pkrvars.hcl" \
-      -var-file="$CONFIG_PATH/common.pkrvars.hcl" \
-      "$INPUT_PATH"
-
-  ### All done. ###
-  echo "Done."
-}
-
-menu_option_3() {
-  INPUT_PATH="$SCRIPT_PATH"/builds/linux/ubuntu/22-04-lts/
-  echo -e "\nCONFIRM: Build a Ubuntu Server 22.04 LTS (cloud-init) Template for VMware vSphere?"
-  echo -e "\nContinue? (y/n)"
-  read -r REPLY
-  if [[ ! $REPLY =~ ^[Yy]$ ]]
-  then
-    exit 1
-  fi
-
-  ### Build a Ubuntu Server 22.04 LTS (cloud-init) Template for VMware vSphere. ###
-  echo "Building a Ubuntu Server 22.04 LTS (cloud-init) Template for VMware vSphere..."
-
-  ### Initialize HashiCorp Packer and required plugins. ###
-  echo "Initializing HashiCorp Packer and required plugins..."
-  packer init "$INPUT_PATH"
-
-  ### Start the Build. ###
-  echo "Starting the build...."
-  packer build -force \
-      -var-file="$CONFIG_PATH/vsphere.pkrvars.hcl" \
-      -var-file="$CONFIG_PATH/build.pkrvars.hcl" \
-      -var-file="$CONFIG_PATH/ansible.pkrvars.hcl" \
-      -var-file="$CONFIG_PATH/proxy.pkrvars.hcl" \
-      -var-file="$CONFIG_PATH/common.pkrvars.hcl" \
-      "$INPUT_PATH"
-
-  ### All done. ###
-  echo "Done."
-}
-
-menu_option_4() {
-  INPUT_PATH="$SCRIPT_PATH"/builds/linux/ubuntu/20-04-lts/
-  echo -e "\nCONFIRM: Build a Ubuntu Server 20.04 LTS (cloud-init) Template for VMware vSphere?"
-  echo -e "\nContinue? (y/n)"
-  read -r REPLY
-  if [[ ! $REPLY =~ ^[Yy]$ ]]
-  then
-    exit 1
-  fi
-
-  ### Build a Ubuntu Server 20.04 LTS (cloud-init) Template for VMware vSphere. ###
-  echo "Building a Ubuntu Server 20.04 LTS (cloud-init) Template for VMware vSphere..."
-
-  ### Initialize HashiCorp Packer and required plugins. ###
-  echo "Initializing HashiCorp Packer and required plugins..."
-  packer init "$INPUT_PATH"
-
-  ### Start the Build. ###
-  echo "Starting the build...."
-  packer build -force \
-      -var-file="$CONFIG_PATH/vsphere.pkrvars.hcl" \
-      -var-file="$CONFIG_PATH/build.pkrvars.hcl" \
-      -var-file="$CONFIG_PATH/ansible.pkrvars.hcl" \
-      -var-file="$CONFIG_PATH/proxy.pkrvars.hcl" \
-      -var-file="$CONFIG_PATH/common.pkrvars.hcl" \
-      "$INPUT_PATH"
-
-  ### All done. ###
-  echo "Done."
-}
-
-menu_option_5() {
-  INPUT_PATH="$SCRIPT_PATH"/builds/linux/ubuntu/18-04-lts/
-  echo -e "\nCONFIRM: Build a Ubuntu Server 18.04 LTS Template for VMware vSphere?"
-  echo -e "\nContinue? (y/n)"
-  read -r REPLY
-  if [[ ! $REPLY =~ ^[Yy]$ ]]
-  then
-    exit 1
-  fi
-
-  ### Build a Ubuntu Server 18.04 LTS Template for VMware vSphere. ###
-  echo "Building a Ubuntu Server 18.04 LTS Template for VMware vSphere..."
-
-  ### Initialize HashiCorp Packer and required plugins. ###
-  echo "Initializing HashiCorp Packer and required plugins..."
-  packer init "$INPUT_PATH"
-
-  ### Start the Build. ###
-  echo "Starting the build...."
-  packer build -force \
-      -var-file="$CONFIG_PATH/vsphere.pkrvars.hcl" \
-      -var-file="$CONFIG_PATH/build.pkrvars.hcl" \
-      -var-file="$CONFIG_PATH/ansible.pkrvars.hcl" \
-      -var-file="$CONFIG_PATH/proxy.pkrvars.hcl" \
-      -var-file="$CONFIG_PATH/common.pkrvars.hcl" \
-      "$INPUT_PATH"
-
-  ### All done. ###
-  echo "Done."
-}
-
-menu_option_6() {
-  INPUT_PATH="$SCRIPT_PATH"/builds/linux/rhel/9/
-  echo -e "\nCONFIRM: Build a Red Hat Enterprise Linux 9 Template for VMware vSphere?"
-  echo -e "\nContinue? (y/n)"
-  read -r REPLY
-  if [[ ! $REPLY =~ ^[Yy]$ ]]
-  then
-    exit 1
-  fi
-
-  ### Build a Red Hat Enterprise Linux 9 Template for VMware vSphere. ###
-  echo "Building a Red Hat Enterprise Linux 9 Template for VMware vSphere..."
-
-  ### Initialize HashiCorp Packer and required plugins. ###
-  echo "Initializing HashiCorp Packer and required plugins..."
-  packer init "$INPUT_PATH"
-
-  ### Start the Build. ###
-  echo "Starting the build...."
-  packer build -force \
-      -var-file="$CONFIG_PATH/vsphere.pkrvars.hcl" \
-      -var-file="$CONFIG_PATH/build.pkrvars.hcl" \
-      -var-file="$CONFIG_PATH/ansible.pkrvars.hcl" \
-      -var-file="$CONFIG_PATH/proxy.pkrvars.hcl" \
-      -var-file="$CONFIG_PATH/common.pkrvars.hcl" \
-      -var-file="$CONFIG_PATH/rhsm.pkrvars.hcl" \
-      "$INPUT_PATH"
-
-  ### All done. ###
-  echo "Done."
-}
-
-menu_option_7() {
-  INPUT_PATH="$SCRIPT_PATH"/builds/linux/rhel/8/
-  echo -e "\nCONFIRM: Build a Red Hat Enterprise Linux 8 Template for VMware vSphere?"
-  echo -e "\nContinue? (y/n)"
-  read -r REPLY
-  if [[ ! $REPLY =~ ^[Yy]$ ]]
-  then
-    exit 1
-  fi
-
-  ### Build a Red Hat Enterprise Linux 8 Template for VMware vSphere. ###
-  echo "Building a Red Hat Enterprise Linux 8 Template for VMware vSphere..."
-
-  ### Initialize HashiCorp Packer and required plugins. ###
-  echo "Initializing HashiCorp Packer and required plugins..."
-  packer init "$INPUT_PATH"
-
-  ### Start the Build. ###
-  echo "Starting the build...."
-  packer build -force \
-      -var-file="$CONFIG_PATH/vsphere.pkrvars.hcl" \
-      -var-file="$CONFIG_PATH/build.pkrvars.hcl" \
-      -var-file="$CONFIG_PATH/ansible.pkrvars.hcl" \
-      -var-file="$CONFIG_PATH/proxy.pkrvars.hcl" \
-      -var-file="$CONFIG_PATH/common.pkrvars.hcl" \
-      -var-file="$CONFIG_PATH/rhsm.pkrvars.hcl" \
-      "$INPUT_PATH"
-
-  ### All done. ###
-  echo "Done."
-}
-
-menu_option_8() {
-  INPUT_PATH="$SCRIPT_PATH"/builds/linux/rhel/7/
-  echo -e "\nCONFIRM: Build a Red Hat Enterprise Linux 7 Template for VMware vSphere?"
-  echo -e "\nContinue? (y/n)"
-  read -r REPLY
-  if [[ ! $REPLY =~ ^[Yy]$ ]]
-  then
-    exit 1
-  fi
-
-  ### Build a Red Hat Enterprise Linux 7 Template for VMware vSphere. ###
-  echo "Building a Red Hat Enterprise Linux 7 Template for VMware vSphere..."
-
-  ### Initialize HashiCorp Packer and required plugins. ###
-  echo "Initializing HashiCorp Packer and required plugins..."
-  packer init "$INPUT_PATH"
-
-  ### Start the Build. ###
-  echo "Starting the build...."
-  packer build -force \
-      -var-file="$CONFIG_PATH/vsphere.pkrvars.hcl" \
-      -var-file="$CONFIG_PATH/build.pkrvars.hcl" \
-      -var-file="$CONFIG_PATH/ansible.pkrvars.hcl" \
-      -var-file="$CONFIG_PATH/proxy.pkrvars.hcl" \
-      -var-file="$CONFIG_PATH/common.pkrvars.hcl" \
-      -var-file="$CONFIG_PATH/rhsm.pkrvars.hcl" \
-      "$INPUT_PATH"
-
-  ### All done. ###
-  echo "Done."
-}
-
-menu_option_9() {
-  INPUT_PATH="$SCRIPT_PATH"/builds/linux/almalinux/9/
-  echo -e "\nCONFIRM: Build a AlmaLinux OS 9 Template for VMware vSphere?"
-  echo -e "\nContinue? (y/n)"
-  read -r REPLY
-  if [[ ! $REPLY =~ ^[Yy]$ ]]
-  then
-    exit 1
-  fi
-
-  ### Build a AlmaLinux OS 9 Template for VMware vSphere. ###
-  echo "Building a AlmaLinux OS 9 Template for VMware vSphere..."
-
-  ### Initialize HashiCorp Packer and required plugins. ###
-  echo "Initializing HashiCorp Packer and required plugins..."
-  packer init "$INPUT_PATH"
-
-  ### Start the Build. ###
-  echo "Starting the build...."
-  packer build -force \
-      -var-file="$CONFIG_PATH/vsphere.pkrvars.hcl" \
-      -var-file="$CONFIG_PATH/build.pkrvars.hcl" \
-      -var-file="$CONFIG_PATH/ansible.pkrvars.hcl" \
-      -var-file="$CONFIG_PATH/proxy.pkrvars.hcl" \
-      -var-file="$CONFIG_PATH/common.pkrvars.hcl" \
-      "$INPUT_PATH"
-
-  ### All done. ###
-  echo "Done."
-}
-
-menu_option_10() {
-  INPUT_PATH="$SCRIPT_PATH"/builds/linux/almalinux/8/
-  echo -e "\nCONFIRM: Build a AlmaLinux OS 8 Template for VMware vSphere?"
-  echo -e "\nContinue? (y/n)"
-  read -r REPLY
-  if [[ ! $REPLY =~ ^[Yy]$ ]]
-  then
-    exit 1
-  fi
-
-  ### Build a AlmaLinux OS 8 Template for VMware vSphere. ###
-  echo "Building a AlmaLinux OS 8 Template for VMware vSphere..."
-
-  ### Initialize HashiCorp Packer and required plugins. ###
-  echo "Initializing HashiCorp Packer and required plugins..."
-  packer init "$INPUT_PATH"
-
-  ### Start the Build. ###
-  echo "Starting the build...."
-  packer build -force \
-      -var-file="$CONFIG_PATH/vsphere.pkrvars.hcl" \
-      -var-file="$CONFIG_PATH/build.pkrvars.hcl" \
-      -var-file="$CONFIG_PATH/ansible.pkrvars.hcl" \
-      -var-file="$CONFIG_PATH/proxy.pkrvars.hcl" \
-      -var-file="$CONFIG_PATH/common.pkrvars.hcl" \
-      "$INPUT_PATH"
-
-  ### All done. ###
-  echo "Done."
-}
-
-menu_option_11() {
-  INPUT_PATH="$SCRIPT_PATH"/builds/linux/rocky/9/
-  echo -e "\nCONFIRM: Build a Rocky Linux 9 Template for VMware vSphere?"
-  echo -e "\nContinue? (y/n)"
-  read -r REPLY
-  if [[ ! $REPLY =~ ^[Yy]$ ]]
-  then
-    exit 1
-  fi
-
-  ### Build a Rocky Linux 9 Template for VMware vSphere. ###
-  echo "Building a Rocky Linux 9 Template for VMware vSphere..."
-
-  ### Initialize HashiCorp Packer and required plugins. ###
-  echo "Initializing HashiCorp Packer and required plugins..."
-  packer init "$INPUT_PATH"
-
-  ### Start the Build. ###
-  echo "Starting the build...."
-  packer build -force \
-      -var-file="$CONFIG_PATH/vsphere.pkrvars.hcl" \
-      -var-file="$CONFIG_PATH/build.pkrvars.hcl" \
-      -var-file="$CONFIG_PATH/ansible.pkrvars.hcl" \
-      -var-file="$CONFIG_PATH/proxy.pkrvars.hcl" \
-      -var-file="$CONFIG_PATH/common.pkrvars.hcl" \
-      "$INPUT_PATH"
-
-  ### All done. ###
-  echo "Done."
-}
-
-menu_option_12() {
-  INPUT_PATH="$SCRIPT_PATH"/builds/linux/rocky/8/
-  echo -e "\nCONFIRM: Build a Rocky Linux 8 Template for VMware vSphere?"
-  echo -e "\nContinue? (y/n)"
-  read -r REPLY
-  if [[ ! $REPLY =~ ^[Yy]$ ]]
-  then
-    exit 1
-  fi
-
-  ### Build a Rocky Linux 8 Template for VMware vSphere. ###
-  echo "Building a Rocky Linux 8 Template for VMware vSphere..."
-
-  ### Initialize HashiCorp Packer and required plugins. ###
-  echo "Initializing HashiCorp Packer and required plugins..."
-  packer init "$INPUT_PATH"
-
-  ### Start the Build. ###
-  echo "Starting the build...."
-  packer build -force \
-      -var-file="$CONFIG_PATH/vsphere.pkrvars.hcl" \
-      -var-file="$CONFIG_PATH/build.pkrvars.hcl" \
-      -var-file="$CONFIG_PATH/ansible.pkrvars.hcl" \
-      -var-file="$CONFIG_PATH/proxy.pkrvars.hcl" \
-      -var-file="$CONFIG_PATH/common.pkrvars.hcl" \
-      "$INPUT_PATH"
-
-  ### All done. ###
-  echo "Done."
-}
-
-menu_option_13() {
-  INPUT_PATH="$SCRIPT_PATH"/builds/linux/centos/9-stream/
-  echo -e "\nCONFIRM: Build a CentOS Stream 9 Template for VMware vSphere?"
-  echo -e "\nContinue? (y/n)"
-  read -r REPLY
-  if [[ ! $REPLY =~ ^[Yy]$ ]]
-  then
-    exit 1
-  fi
-
-  ### Build a CentOS Stream 9 Template for VMware vSphere. ###
-  echo "Building a CentOS Stream 9 Template for VMware vSphere..."
-
-  ### Initialize HashiCorp Packer and required plugins. ###
-  echo "Initializing HashiCorp Packer and required plugins..."
-  packer init "$INPUT_PATH"
-
-  ### Start the Build. ###
-  echo "Starting the build...."
-  packer build -force \
-      -var-file="$CONFIG_PATH/vsphere.pkrvars.hcl" \
-      -var-file="$CONFIG_PATH/build.pkrvars.hcl" \
-      -var-file="$CONFIG_PATH/ansible.pkrvars.hcl" \
-      -var-file="$CONFIG_PATH/proxy.pkrvars.hcl" \
-      -var-file="$CONFIG_PATH/common.pkrvars.hcl" \
-      "$INPUT_PATH"
-
-  ### All done. ###
-  echo "Done."
-}
-
-menu_option_14() {
-  INPUT_PATH="$SCRIPT_PATH"/builds/linux/centos/8-stream/
-  echo -e "\nCONFIRM: Build a CentOS Stream 8 Template for VMware vSphere?"
-  echo -e "\nContinue? (y/n)"
-  read -r REPLY
-  if [[ ! $REPLY =~ ^[Yy]$ ]]
-  then
-    exit 1
-  fi
-
-  ### Build a CentOS Stream 8 Template for VMware vSphere. ###
-  echo "Building a CentOS Stream 8 Template for VMware vSphere..."
-
-  ### Initialize HashiCorp Packer and required plugins. ###
-  echo "Initializing HashiCorp Packer and required plugins..."
-  packer init "$INPUT_PATH"
-
-  ### Start the Build. ###
-  echo "Starting the build...."
-  packer build -force \
-      -var-file="$CONFIG_PATH/vsphere.pkrvars.hcl" \
-      -var-file="$CONFIG_PATH/build.pkrvars.hcl" \
-      -var-file="$CONFIG_PATH/ansible.pkrvars.hcl" \
-      -var-file="$CONFIG_PATH/proxy.pkrvars.hcl" \
-      -var-file="$CONFIG_PATH/common.pkrvars.hcl" \
-      "$INPUT_PATH"
-
-  ### All done. ###
-  echo "Done."
-}
-
-menu_option_15() {
-  INPUT_PATH="$SCRIPT_PATH"/builds/linux/centos/7/
-  echo -e "\nCONFIRM: Build a CentOS Linux 7 Template for VMware vSphere?"
-  echo -e "\nContinue? (y/n)"
-  read -r REPLY
-  if [[ ! $REPLY =~ ^[Yy]$ ]]
-  then
-    exit 1
-  fi
-
-  ### Build a CentOS Linux 7 Template for VMware vSphere. ###
-  echo "Building a CentOS Linux 7 Template for VMware vSphere..."
-
-  ### Initialize HashiCorp Packer and required plugins. ###
-  echo "Initializing HashiCorp Packer and required plugins..."
-  packer init "$INPUT_PATH"
-
-  ### Start the Build. ###
-  echo "Starting the build...."
-  packer build -force \
-      -var-file="$CONFIG_PATH/vsphere.pkrvars.hcl" \
-      -var-file="$CONFIG_PATH/build.pkrvars.hcl" \
-      -var-file="$CONFIG_PATH/ansible.pkrvars.hcl" \
-      -var-file="$CONFIG_PATH/proxy.pkrvars.hcl" \
-      -var-file="$CONFIG_PATH/common.pkrvars.hcl" \
-      "$INPUT_PATH"
-
-  ### All done. ###
-  echo "Done."
-}
-
-menu_option_16() {
-  INPUT_PATH="$SCRIPT_PATH"/builds/linux/sles/15/
-  echo -e "\nCONFIRM: Build a SUSE Linux Enterprise Server 15 Template for VMware vSphere?"
-  echo -e "\nContinue? (y/n)"
-  read -r REPLY
-  if [[ ! $REPLY =~ ^[Yy]$ ]]
-  then
-    exit 1
-  fi
-
-  ### Build a SUSE Linux Enterprise Server 15 Template for VMware vSphere. ###
-  echo "Building a SUSE Linux Enterprise Server 15 Template for VMware vSphere..."
-
-  ### Initialize HashiCorp Packer and required plugins. ###
-  echo "Initializing HashiCorp Packer and required plugins..."
-  packer init "$INPUT_PATH"
-
-  ### Start the Build. ###
-  echo "Starting the build...."
-  packer build -force \
-      -var-file="$CONFIG_PATH/vsphere.pkrvars.hcl" \
-      -var-file="$CONFIG_PATH/build.pkrvars.hcl" \
-      -var-file="$CONFIG_PATH/ansible.pkrvars.hcl" \
-      -var-file="$CONFIG_PATH/proxy.pkrvars.hcl" \
-      -var-file="$CONFIG_PATH/common.pkrvars.hcl" \
-      -var-file="$CONFIG_PATH/scc.pkrvars.hcl" \
-      "$INPUT_PATH"
-
-  ### All done. ###
-  echo "Done."
-}
-
-
-menu_option_17() {
-  INPUT_PATH="$SCRIPT_PATH"/builds/windows/server/2022/
-  echo -e "\nCONFIRM: Build all Windows Server 2022 Templates for VMware vSphere?"
-  echo -e "\nContinue? (y/n)"
-  read -r REPLY
-  if [[ ! $REPLY =~ ^[Yy]$ ]]
-  then
-    exit 1
-  fi
-
-  ### Build all Windows Server 2022 Templates for VMware vSphere. ###
-  echo "Building all Windows Server 2022 Templates for VMware vSphere..."
-
-  ### Initialize HashiCorp Packer and required plugins. ###
-  echo "Initializing HashiCorp Packer and required plugins..."
-  packer init "$INPUT_PATH"
-
-  ### Start the Build. ###
-  echo "Starting the build...."
-  packer build -force \
-      -var-file="$CONFIG_PATH/vsphere.pkrvars.hcl" \
-      -var-file="$CONFIG_PATH/build.pkrvars.hcl" \
-      -var-file="$CONFIG_PATH/common.pkrvars.hcl" \
-      "$INPUT_PATH"
-
-  ### All done. ###
-  echo "Done."
-}
-
-menu_option_18() {
-  INPUT_PATH="$SCRIPT_PATH"/builds/windows/server/2022/
-  echo -e "\nCONFIRM: Build Microsoft Windows Server 2022 Standard Templates for VMware vSphere?"
-  echo -e "\nContinue? (y/n)"
-  read -r REPLY
-  if [[ ! $REPLY =~ ^[Yy]$ ]]
-  then
-    exit 1
-  fi
-
-  ### Build Microsoft Windows Server 2022 Standard Templates for VMware vSphere. ###
-  echo "Building Microsoft Windows Server 2022 Standard Templates for VMware vSphere..."
-
-  ### Initialize HashiCorp Packer and required plugins. ###
-  echo "Initializing HashiCorp Packer and required plugins..."
-  packer init "$INPUT_PATH"
-
-  ### Start the Build. ###
-  echo "Starting the build...."
-  packer build -force \
-      --only vsphere-iso.windows-server-standard-dexp,vsphere-iso.windows-server-standard-core \
-      -var-file="$CONFIG_PATH/vsphere.pkrvars.hcl" \
-      -var-file="$CONFIG_PATH/build.pkrvars.hcl" \
-      -var-file="$CONFIG_PATH/common.pkrvars.hcl" \
-      "$INPUT_PATH"
-
-  ### All done. ###
-  echo "Done."
-}
-
-menu_option_19() {
-  INPUT_PATH="$SCRIPT_PATH"/builds/windows/server/2022/
-  echo -e "\nCONFIRM: Build Microsoft Windows Server 2022 Datacenter Templates for VMware vSphere?"
-  echo -e "\nContinue? (y/n)"
-  read -r REPLY
-  if [[ ! $REPLY =~ ^[Yy]$ ]]
-  then
-    exit 1
-  fi
-
-  ### Build Microsoft Windows Server 2022 Datacenter Templates for VMware vSphere. ###
-  echo "Building Microsoft Windows Server 2022 Datacenter Templates for VMware vSphere..."
-
-  ### Initialize HashiCorp Packer and required plugins. ###
-  echo "Initializing HashiCorp Packer and required plugins..."
-  packer init "$INPUT_PATH"
-
-  ### Start the Build. ###
-  echo "Starting the build...."
-  packer build -force \
-      --only vsphere-iso.windows-server-datacenter-dexp,vsphere-iso.windows-server-datacenter-core \
-      -var-file="$CONFIG_PATH/vsphere.pkrvars.hcl" \
-      -var-file="$CONFIG_PATH/build.pkrvars.hcl" \
-      -var-file="$CONFIG_PATH/common.pkrvars.hcl" \
-      "$INPUT_PATH"
-
-  ### All done. ###
-  echo "Done."
-}
-
-menu_option_20() {
-  INPUT_PATH="$SCRIPT_PATH"/builds/windows/server/2019/
-  echo -e "\nCONFIRM: Build all Windows Server 2019 Templates for VMware vSphere?"
-  echo -e "\nContinue? (y/n)"
-  read -r REPLY
-  if [[ ! $REPLY =~ ^[Yy]$ ]]
-  then
-    exit 1
-  fi
-
-  ### Build all Windows Server 2019 Templates for VMware vSphere. ###
-  echo "Building all Windows Server 2019 Templates for VMware vSphere..."
-
-  ### Initialize HashiCorp Packer and required plugins. ###
-  echo "Initializing HashiCorp Packer and required plugins..."
-  packer init "$INPUT_PATH"
-
-  ### Start the Build. ###
-  echo "Starting the build...."
-  packer build -force \
-      -var-file="$CONFIG_PATH/vsphere.pkrvars.hcl" \
-      -var-file="$CONFIG_PATH/build.pkrvars.hcl" \
-      -var-file="$CONFIG_PATH/common.pkrvars.hcl" \
-      "$INPUT_PATH"
-
-  ### All done. ###
-  echo "Done."
-}
-
-menu_option_21() {
-  INPUT_PATH="$SCRIPT_PATH"/builds/windows/server/2019/
-  echo -e "\nCONFIRM: Build Microsoft Windows Server 2019 Standard Templates for VMware vSphere?"
-  echo -e "\nContinue? (y/n)"
-  read -r REPLY
-  if [[ ! $REPLY =~ ^[Yy]$ ]]
-  then
-    exit 1
-  fi
-
-  ### Build Microsoft Windows Server 2019 Standard Templates for VMware vSphere. ###
-  echo "Building Microsoft Windows Server 2019 Standard Templates for VMware vSphere..."
-
-  ### Initialize HashiCorp Packer and required plugins. ###
-  echo "Initializing HashiCorp Packer and required plugins..."
-  packer init "$INPUT_PATH"
-
-  ### Start the Build. ###
-  echo "Starting the build...."
-  packer build -force \
-      --only vsphere-iso.windows-server-standard-dexp,vsphere-iso.windows-server-standard-core \
-      -var-file="$CONFIG_PATH/vsphere.pkrvars.hcl" \
-      -var-file="$CONFIG_PATH/build.pkrvars.hcl" \
-      -var-file="$CONFIG_PATH/common.pkrvars.hcl" \
-      "$INPUT_PATH"
-
-  ### All done. ###
-  echo "Done."
-}
-
-menu_option_22() {
-  INPUT_PATH="$SCRIPT_PATH"/builds/windows/server/2019/
-  echo -e "\nCONFIRM: Build Microsoft Windows Server 2019 Datacenter Templates for VMware vSphere?"
-  echo -e "\nContinue? (y/n)"
-  read -r REPLY
-  if [[ ! $REPLY =~ ^[Yy]$ ]]
-  then
-    exit 1
-  fi
-
-  ### Build Microsoft Windows Server 2019 Datacenter Templates for VMware vSphere. ###
-  echo "Building Microsoft Windows Server 2019 Datacenter Templates for VMware vSphere..."
-
-  ### Initialize HashiCorp Packer and required plugins. ###
-  echo "Initializing HashiCorp Packer and required plugins..."
-  packer init "$INPUT_PATH"
-
-  ### Start the Build. ###
-  echo "Starting the build...."
-  packer build -force \
-      --only vsphere-iso.windows-server-datacenter-dexp,vsphere-iso.windows-server-datacenter-core \
-      -var-file="$CONFIG_PATH/vsphere.pkrvars.hcl" \
-      -var-file="$CONFIG_PATH/build.pkrvars.hcl" \
-      -var-file="$CONFIG_PATH/common.pkrvars.hcl" \
-      "$INPUT_PATH"
-
-  ### All done. ###
-  echo "Done."
-}
-
-menu_option_23() {
-  INPUT_PATH="$SCRIPT_PATH"/builds/windows/desktop/11/
-  echo -e "\nCONFIRM: Build a Windows 11 Template for VMware vSphere?"
-  echo -e "\nContinue? (y/n)"
-  read -r REPLY
-  if [[ ! $REPLY =~ ^[Yy]$ ]]
-  then
-    exit 1
-  fi
-
-  ### Build a Windows 11 Template for VMware vSphere. ###
-  echo "Building a Windows 11 Template for VMware vSphere..."
-
-  ### Initialize HashiCorp Packer and required plugins. ###
-  echo "Initializing HashiCorp Packer and required plugins..."
-  packer init "$INPUT_PATH"
-
-  ### Start the Build. ###
-  echo "Starting the build...."
-  packer build -force \
-      -var-file="$CONFIG_PATH/vsphere.pkrvars.hcl" \
-      -var-file="$CONFIG_PATH/build.pkrvars.hcl" \
-      -var-file="$CONFIG_PATH/common.pkrvars.hcl" \
-      "$INPUT_PATH"
-
-  ### All done. ###
-  echo "Done."
-}
-
-menu_option_24() {
-  INPUT_PATH="$SCRIPT_PATH"/builds/windows/desktop/10/
-  echo -e "\nCONFIRM: Build a Windows 10 Template for VMware vSphere?"
-  echo -e "\nContinue? (y/n)"
-  read -r REPLY
-  if [[ ! $REPLY =~ ^[Yy]$ ]]
-  then
-    exit 1
-  fi
-
-  ### Build a Windows 10 Template for VMware vSphere. ###
-  echo "Building a Windows 10 Template for VMware vSphere..."
-
-  ### Initialize HashiCorp Packer and required plugins. ###
-  echo "Initializing HashiCorp Packer and required plugins..."
-  packer init "$INPUT_PATH"
-
-  ### Start the Build. ###
-  echo "Starting the build...."
-  packer build -force \
-      -var-file="$CONFIG_PATH/vsphere.pkrvars.hcl" \
-      -var-file="$CONFIG_PATH/build.pkrvars.hcl" \
-      -var-file="$CONFIG_PATH/common.pkrvars.hcl" \
-      "$INPUT_PATH"
-
-  ### All done. ###
-  echo "Done."
-}
-
-press_enter() {
-  cd "$SCRIPT_PATH"
-  echo -n "Press Enter to continue."
-  read -r
-  clear
-}
-
-info() {
-  echo "License: BSD-2"
-  echo ""
-  echo "For more information, review the project README."
-  echo "GitHub Repository: github.com/vmware-samples/packer-examples-for-vsphere/"
-  read -r
-}
-
-incorrect_selection() {
-  echo "Do or do not. There is no try."
-}
-
-until [ "$selection" = "0" ]; do
-  clear
-  echo ""
-  echo "    ____             __                ____        _ __    __     "
-  echo "   / __ \____ ______/ /_____  _____   / __ )__  __(_) /___/ /____ "
-  echo "  / /_/ / __  / ___/ //_/ _ \/ ___/  / __  / / / / / / __  / ___/ "
-  echo " / ____/ /_/ / /__/ ,< /  __/ /     / /_/ / /_/ / / / /_/ (__  )  "
-  echo "/_/    \__,_/\___/_/|_|\___/_/     /_____/\__,_/_/_/\__,_/____/   "
-  echo ""
-  echo -n "  Select a HashiCorp Packer build for VMware vSphere:"
-  echo ""
-  echo ""
-  echo "      Linux Distribution:"
-  echo ""
-  echo "    	 1  -  VMware Photon OS 4"
-  echo "    	 2  -  Debian 11"
-  echo "    	 3  -  Ubuntu Server 22.04 LTS (cloud-init)"
-  echo "    	 4  -  Ubuntu Server 20.04 LTS (cloud-init)"
-  echo "    	 5  -  Ubuntu Server 18.04 LTS"
-  echo "    	 6  -  Red Hat Enterprise Linux 9"
-  echo "    	 7  -  Red Hat Enterprise Linux 8"
-  echo "    	 8  -  Red Hat Enterprise Linux 7"
-  echo "    	 9  -  AlmaLinux OS 9"
-  echo "    	10  -  AlmaLinux OS 8"
-  echo "    	11  -  Rocky Linux 9"
-  echo "    	12  -  Rocky Linux 8"
-  echo "    	13  -  CentOS Stream 9"
-  echo "    	14  -  CentOS Stream 8"
-  echo "    	15  -  CentOS Linux 7"
-  echo "    	16  -  SUSE Linux Enterprise Server 15"
-  echo ""
-  echo "      Microsoft Windows:"
-  echo ""
-  echo "    	17  -  Windows Server 2022 - All"
-  echo "    	18  -  Windows Server 2022 - Standard Only"
-  echo "    	19  -  Windows Server 2022 - Datacenter Only"
-  echo "    	20  -  Windows Server 2019 - All"
-  echo "    	21  -  Windows Server 2019 - Standard Only"
-  echo "    	22  -  Windows Server 2019 - Datacenter Only"
-  echo "    	23  -  Windows 11"
-  echo "    	24  -  Windows 10"
-  echo ""
-  echo "      Other:"
-  echo ""
-  echo "        I   -  Information"
-  echo "        Q   -  Quit"
-  echo ""
-  read -r selection
-  echo ""
-  case $selection in
-    1 ) clear ; menu_option_1 ; press_enter ;;
-    2 ) clear ; menu_option_2 ; press_enter ;;
-    3 ) clear ; menu_option_3 ; press_enter ;;
-    4 ) clear ; menu_option_4 ; press_enter ;;
-    5 ) clear ; menu_option_5 ; press_enter ;;
-    6 ) clear ; menu_option_6 ; press_enter ;;
-    7 ) clear ; menu_option_7 ; press_enter ;;
-    8 ) clear ; menu_option_8 ; press_enter ;;
-    9 ) clear ; menu_option_9 ; press_enter ;;
-    10 ) clear ; menu_option_10 ; press_enter ;;
-    11 ) clear ; menu_option_11 ; press_enter ;;
-    12 ) clear ; menu_option_12 ; press_enter ;;
-    13 ) clear ; menu_option_13 ; press_enter ;;
-    14 ) clear ; menu_option_14 ; press_enter ;;
-    15 ) clear ; menu_option_15 ; press_enter ;;
-    16 ) clear ; menu_option_16 ; press_enter ;;
-    17 ) clear ; menu_option_17 ; press_enter ;;
-    18 ) clear ; menu_option_18 ; press_enter ;;
-    19 ) clear ; menu_option_19 ; press_enter ;;
-    20 ) clear ; menu_option_20 ; press_enter ;;
-    21 ) clear ; menu_option_21 ; press_enter ;;
-    22 ) clear ; menu_option_22 ; press_enter ;;
-    23 ) clear ; menu_option_23 ; press_enter ;;
-    24 ) clear ; menu_option_24 ; press_enter ;;
-    I ) clear ; info ; press_enter ;;
-    Q ) clear ; exit ;;
-    * ) clear ; incorrect_selection ; press_enter ;;
+    ;;
   esac
+  shift
 done
+
+if [ -z "${__input_path}" -o -z "${__input_os}" ]; then
+  echo "Please specify a supported guest operating system"
+  exit 1
+fi
+
+if [ -z "${__secrets}" -o ! -f "${__secrets}" ]; then
+  echo "Invalid secrets HCL file: ${__secrets}"
+  echo "Please provide a valid file and re-run script"
+  exit 1
+fi
+
+__git_branch=""
+__git_commit=""
+__git_remote_url=""
+
+if [ ! -z "${__include_details}" ]; then
+  set +e
+  which git > /dev/null 2>&1
+  if [ $? -eq 0 ]; then
+    if [ "$(git rev-parse --is-inside-work-tree)" == "true" ]; then
+      __git_branch="$(git branch --show-current)"
+      __git_commit="$(git log -1 --pretty=format:%h)"
+      __git_remote_name="$(git config branch.${__git_branch}.remote)"
+
+      # check if there are modified files
+      git diff-index --quiet HEAD
+      if [ $? -ne 0 ]; then
+        __git_branch="${__git_branch}(*)"
+      fi
+
+      # check if there are untracked files
+      __untracked=$(git ls-files . --exclude-standard --others)
+      if [ ! -z "${__untracked}" ]; then
+        __git_branch="${__git_branch}(+)"
+      fi
+
+      # determine remote Git URL
+      if [ ! -z "${__git_remote_name}" ]; then
+        __git_remote_url=$(git config remote.${__git_remote_name}.url)
+      else
+        __git_remote_url=""
+      fi
+    fi
+  fi
+  set -e
+fi
+
+# always include Vagrant and VirtualBox information
+
+set +e
+__vagrant_version=""
+which vagrant > /dev/null 2>&1
+if [ $? -eq 0 ]; then
+  __vagrant_version=$(vagrant --version)
+fi
+set -e
+
+set +e
+__vbox_version=""
+which VBoxManage > /dev/null 2>&1
+if [ $? -eq 0 ]; then
+  __vbox_version=$(VBoxManage --version)
+fi
+set -e
+
+if [ -z "${__vagrant_version}" -o -z "${__vbox_version}" ]; then
+  echo "ERROR: Vagrant and VirtualBox are required"
+  echo "   VirtualBox found: ${__vbox_version}"
+  echo "   Vagrant found: ${__vagrant_version}"
+  exit 1
+fi
+
+__builder_info="VirtualBox ${__vbox_version}, ${__vagrant_version}"
+
+echo "================================"
+echo "packer-virtualbox"
+echo "================================"
+echo ""
+
+echo "Packer workspace: ${__input_path}"
+echo "VirtualBox/Vagrant details: ${__builder_info}"
+echo "Build output directory: ${__output_directory}"
+echo "Build user: ${USER}"
+echo "OS type: ${__input_os}"
+if [ ! -z "${__include_details}" ]; then
+  echo "Git Info"
+  echo "  - Branch: ${__git_branch}"
+  echo "  - Commit: ${__git_commit}"
+  echo "  - Remote URL: ${__git_remote_url}"
+fi
+echo -e "\nContinue? (y/n)"
+read -r REPLY
+if [[ ! $REPLY =~ ^[Yy]$ ]]
+then
+  exit 1
+fi
+
+# include sensitive file
+
+__var_files="-var-file=${__secrets} ${__var_files}"
+
+# external configurations
+
+if [ ! -z "${__configs}" ]; then
+  for override in ${__var_files_overrides}; do
+    if [ -f "${__configs}/${override}" ]; then
+      __var_files="${__var_files} -var-file=${__configs}/${override}"
+      echo "Config: ${__configs}/${override}"
+    fi
+  done
+fi
+
+echo ""
+echo "Initializing HashiCorp Packer and required plugins..."
+packer init "${__input_path}"
+
+echo "Building...."
+
+packer build -force \
+  -var "build_script_username=${USER}" \
+  -var "builder_info=${__builder_info}" \
+  -var "build_script_output_directory=${__output_directory}" \
+  -var "git_branch=${__git_branch}" \
+  -var "git_commit=${__git_commit}" \
+  -var "git_remote_url=${__git_remote_url}" \
+  ${__var_files} \
+  "${__input_path}"
+
+echo "Done."
