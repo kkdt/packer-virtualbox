@@ -3,7 +3,7 @@
   hosts: all
   become: yes
   become_method: sudo
-  gather_facts: no
+  gather_facts: yes
   tasks:
     - name: Register as user with password, random string subscription name
       community.general.redhat_subscription:
@@ -12,7 +12,12 @@
         password: "{{ rhsm_password }}"
         consumer_name: "{{ query('community.general.random_string', upper=true, numbers=false, special=false) }}"
         auto_attach: true
-      when: (rhsm_username is defined) and (rhsm_username|length > 0) and (rhsm_password is defined) and (rhsm_password|length > 0)
+      when:
+        - "ansible_os_family == 'RedHat'"
+        - rhsm_username is defined
+        - rhsm_username|length > 0
+        - rhsm_password is defined
+        - rhsm_password|length > 0
 
 - name: Default provisioning
   hosts: all
@@ -20,9 +25,16 @@
   become_method: sudo
   gather_facts: yes
   roles:
-    - role: vagrant
+    - role: vagrant-system
+      vars:
+        vagrant_username: vagrant
+        vagrant_group: vagrant
+        vagrant_password: "$1$booW/uzn$AB3hLhngw5B0TkNd5L1ZQ/"
     - role: virtualbox-guest-additions
-#    - role: base
+      vars:
+        VBoxGuestAdditions_iso_local: /Applications/VirtualBox.app/Contents/MacOS/VBoxGuestAdditions.iso
+        VBoxGuestAdditions_iso_remote: /tmp/VBoxGuestAdditions.iso
+        VBoxGuestAdditions_mnt: /mnt/iso
     - role: configure
     - role: clean
 
@@ -30,11 +42,16 @@
   hosts: all
   become: yes
   become_method: sudo
-  gather_facts: no
+  gather_facts: yes
   tasks:
     - name: Unregister as user with password
       community.general.redhat_subscription:
         state: absent
         username: "{{ rhsm_username }}"
         password: "{{ rhsm_password }}"
-      when: (rhsm_username is defined) and (rhsm_username|length > 0) and (rhsm_password is defined) and (rhsm_password|length > 0)
+      when:
+        - "ansible_os_family == 'RedHat'"
+        - rhsm_username is defined
+        - rhsm_username|length > 0
+        - rhsm_password is defined
+        - rhsm_password|length > 0

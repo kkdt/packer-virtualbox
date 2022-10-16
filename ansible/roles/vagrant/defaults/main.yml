@@ -1,6 +1,0 @@
----
-vagrant:
-  username: vagrant
-  group: vagrant
-  # openssl passwd -1 vagrant
-  password: "$1$kNKuVYm7$k9NDbmRQ.he6Fgm6LT82O/"
