@@ -54,3 +54,4 @@ config
 dist
 .vagrant
 *.log
+.ansible-galaxy/

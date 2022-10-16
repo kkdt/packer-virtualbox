@@ -1,0 +1,15 @@
+---
+collections:
+  - name: "community.general"
+    version: ">=5.7.0"
+    type: galaxy
+
+roles:
+  - name: vagrant-system
+    src: git+https://github.com/kkdt/ansible-role-vagrant-system.git
+    version: master
+
+  - name: virtualbox-guest-additions
+    src: git+https://github.com/kkdt/ansible-role-guest-additions.git
+    scm: git
+    version: master
