@@ -123,12 +123,12 @@ build {
     only = ["virtualbox-iso.linux-rhel"]
     except = []
     playbook_file = "${path.cwd}/ansible/playbooks/default.yml"
+    roles_path = "${path.cwd}/ansible/roles"
     user = "${local.ansible_username}"
     ansible_env_vars = [
       "ANSIBLE_HOST_KEY_CHECKING=false",
       "ANSIBLE_LOG_PATH=ansible-${local.vm_id}.log",
-      "ANSIBLE_STDOUT_CALLBACK=yaml",
-      "ANSIBLE_ROLES_PATH=${path.cwd}/ansible/roles"
+      "ANSIBLE_STDOUT_CALLBACK=yaml"
     ]
     extra_arguments = [
       "-v",
