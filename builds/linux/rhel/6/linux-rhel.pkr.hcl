@@ -15,6 +15,7 @@ locals {
   ssh_username = var.build_username == "" ? "root" : var.build_username
   ssh_password = var.build_username == "" ? var.root_password : var.build_password
   ansible_username = local.ssh_username
+  ansible_user_roles = pathexpand("~/.ansible/roles")
   description = "Built on: ${local.build_date}\n${local.build_by}\nServer: ${var.server_name}\nISO: ${var.iso_file}\nGit Branch: ${var.git_branch} (${var.git_commit})\nGit URL: ${var.git_remote_url}\nBuilder: ${var.builder_info}"
   data_source_content = {
     "/ks.cfg" = templatefile("${abspath(path.root)}/data/ks.pkrtpl.hcl", {
@@ -123,12 +124,12 @@ build {
     only = ["virtualbox-iso.linux-rhel"]
     except = []
     playbook_file = "${path.cwd}/ansible/playbooks/default.yml"
-    roles_path = "${path.cwd}/ansible/roles"
     user = "${local.ansible_username}"
     ansible_env_vars = [
       "ANSIBLE_HOST_KEY_CHECKING=false",
       "ANSIBLE_LOG_PATH=ansible-${local.vm_id}.log",
-      "ANSIBLE_STDOUT_CALLBACK=yaml"
+      "ANSIBLE_STDOUT_CALLBACK=yaml",
+      "ANSIBLE_ROLES_PATH=${path.cwd}/ansible/roles:${local.ansible_user_roles}"
     ]
     extra_arguments = [
       "-v",

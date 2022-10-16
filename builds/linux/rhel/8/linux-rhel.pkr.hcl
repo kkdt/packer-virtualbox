@@ -14,6 +14,7 @@ locals {
   build_date = formatdate("YYYY-MM-DD hh:mm ZZZ", timestamp())
   ssh_username = var.build_username == "" ? "root" : var.build_username
   ssh_password = var.build_username == "" ? var.root_password : var.build_password
+  ansible_user_roles = pathexpand("~/.ansible/roles")
   description = "Built on: ${local.build_date}\n${local.build_by}\nServer: ${var.server_name}\nISO: ${var.iso_file}\nGit Branch: ${var.git_branch} (${var.git_commit})\nGit URL: ${var.git_remote_url}\nBuilder: ${var.builder_info}"
   data_source_content = {
     "/ks.cfg" = templatefile("${abspath(path.root)}/data/ks.pkrtpl.hcl", {
@@ -127,7 +128,7 @@ build {
       "ANSIBLE_HOST_KEY_CHECKING=false",
       "ANSIBLE_LOG_PATH=ansible-${local.vm_id}.log",
       "ANSIBLE_STDOUT_CALLBACK=yaml",
-      "ANSIBLE_ROLES_PATH=${path.cwd}/ansible/roles"
+      "ANSIBLE_ROLES_PATH=${path.cwd}/ansible/roles:${local.ansible_user_roles}"
     ]
     extra_arguments = [
       "-v",
