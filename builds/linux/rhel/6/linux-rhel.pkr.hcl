@@ -127,9 +127,8 @@ build {
     roles_path = "${local.ansible_roles_path}"
     collections_path = "${local.ansible_collections_path}"
     galaxy_force_install = true
-    galaxy_force_with_deps = true
     galaxy_file = "${path.cwd}/ansible/requirements.yml"
-    playbook_file = "${path.cwd}/ansible/playbooks/default.yml"
+    playbook_file = "${path.cwd}/ansible/default.yml"
     user = "${local.ansible_username}"
     ansible_env_vars = [
       "ANSIBLE_HOST_KEY_CHECKING=false",
