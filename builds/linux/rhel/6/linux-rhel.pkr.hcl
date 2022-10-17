@@ -44,6 +44,7 @@ locals {
     build_version = var.build_version
     build_by = "${var.build_script_username} with Packer ${packer.version}"
     build_date = local.build_date
+    config_id = var.config_id
     vm_disk_size = var.vm_disk_size
     vm_guest_os_family = var.vm_guest_os_family
     vm_guest_os_name = var.vm_guest_os_name
@@ -127,8 +128,8 @@ build {
     roles_path = "${local.ansible_roles_path}"
     collections_path = "${local.ansible_collections_path}"
     galaxy_force_install = true
-    galaxy_file = "${path.cwd}/ansible/requirements.yml"
-    playbook_file = "${path.cwd}/ansible/default.yml"
+    galaxy_file = "${var.ansible_requirements_yml}"
+    playbook_file = "${var.ansible_playbook}"
     user = "${local.ansible_username}"
     ansible_env_vars = [
       "ANSIBLE_HOST_KEY_CHECKING=false",

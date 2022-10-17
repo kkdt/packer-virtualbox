@@ -12,6 +12,22 @@ variable "rhsm_password" {
   default = ""
 }
 
+variable "config_id" {
+  type = string
+  description = "Optional configuration identifier if '--configs' was provided"
+  default = ""
+}
+
+variable "ansible_playbook" {
+  type = string
+  description = "Path to Ansible playbook"
+}
+
+variable "ansible_requirements_yml" {
+  type = string
+  description = "Path to Ansible requirements.yml file"
+}
+
 variable "vm_guest_os_language" {
   type = string
   description = "The guest operating system language."

@@ -17,6 +17,8 @@ function help() {
 set -e
 
 __directory="$(readlink -f "$(dirname "${BASH_SOURCE[0]}")")"
+__ansible_requirements_yml=${__directory}/ansible/requirements.yml
+__ansible_playbook=${__directory}/ansible/default.yml
 __include_details=""
 __input_path=""
 __input_os=""
@@ -216,6 +218,16 @@ if [ ! -z "${__configs}" ]; then
       echo "Config: ${__configs}/${override}"
     fi
   done
+
+  if [ -f "${__configs}/requirements.yml" ]; then
+    __ansible_requirements_yml="${__configs}/requirements.yml"
+    echo "Ansible: ${__ansible_requirements_yml}"
+  fi
+
+  if [ -f "${__configs}/default.yml" ]; then
+    __ansible_playbook="${__configs}/default.yml"
+    echo "Ansible: ${__ansible_playbook}"
+  fi
 fi
 
 echo ""
@@ -231,6 +243,8 @@ packer build -force \
   -var "git_branch=${__git_branch}" \
   -var "git_commit=${__git_commit}" \
   -var "git_remote_url=${__git_remote_url}" \
+  -var "ansible_playbook=${__ansible_playbook}" \
+  -var "ansible_requirements_yml=${__ansible_requirements_yml}" \
   ${__var_files} \
   "${__input_path}"
 
