@@ -186,6 +186,8 @@ than having all variables in a single HCL file.
 1. build.pkrvars.hcl - Build settings
 1. vm.pkrvars.hcl - Virtual machine settings
 1. virtualbox.pkrvars.hcl - VirtualBox settings
+1. requirements.yml - The Ansible Galaxy requirements file containing `collections` and `roles` attributes
+1. default.yml - The Ansible playbook to use in the build
 
 Using [Packer HCL Variables][packer-variables] hierarchy, the user can override Packer variables using configuration
 overrides - logically grouped Packer HCL files to build a version-controlled virtual machine. Pass in the `--configs`
