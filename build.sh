@@ -8,9 +8,9 @@
 function help() {
   echo "build.sh [options]"
   echo "  --secrets          An externalized HCL variable file containing plain-text secrets"
+  echo "  --os               OS identifier"
   echo "  --configs          (optional) Path to directory containing configurations"
   echo "  --output-directory (optional) Full path to the output directory, default ./dist"
-  echo "  --os               (optional) OS identifier"
   echo "  --details          (optional) Include additional metadata for the box image"
 }
 
