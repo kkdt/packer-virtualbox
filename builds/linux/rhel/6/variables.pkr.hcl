@@ -12,6 +12,12 @@ variable "rhsm_password" {
   default = ""
 }
 
+variable "config_id" {
+  type = string
+  description = "Optional configuration identifier if '--configs' was provided"
+  default = ""
+}
+
 variable "ansible_playbook" {
   type = string
   description = "Path to Ansible playbook"

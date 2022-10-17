@@ -4,6 +4,7 @@
   "Build By": "${build_by}",
   "Build Date": "${build_date}",
   "Builder": "${builder_info}",
+  "config_id": "${config_id}",
   "vm_disk_size": "${vm_disk_size} MB",
   "vm_guest_os_family": "${vm_guest_os_family}",
   "vm_guest_os_name": "${vm_guest_os_name}",

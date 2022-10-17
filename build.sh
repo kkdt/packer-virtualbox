@@ -221,10 +221,12 @@ if [ ! -z "${__configs}" ]; then
 
   if [ -f "${__configs}/requirements.yml" ]; then
     __ansible_requirements_yml="${__configs}/requirements.yml"
+    echo "Ansible: ${__ansible_requirements_yml}"
   fi
 
   if [ -f "${__configs}/default.yml" ]; then
     __ansible_playbook="${__configs}/default.yml"
+    echo "Ansible: ${__ansible_playbook}"
   fi
 fi
 

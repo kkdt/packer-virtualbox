@@ -188,7 +188,7 @@ than having all variables in a single HCL file.
 1. virtualbox.pkrvars.hcl - VirtualBox settings
 
 Using [Packer HCL Variables][packer-variables] hierarchy, the user can override Packer variables using configuration
-overrides - logically grouped Packer HCL files to build a version-controlled virtual machine. Pass in the `--conigs`
+overrides - logically grouped Packer HCL files to build a version-controlled virtual machine. Pass in the `--configs`
 option followed by the full path to the directory containing one or more of the HCL configuration files listed above.
 
 ## Build
