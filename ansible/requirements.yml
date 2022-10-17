@@ -13,3 +13,14 @@ roles:
     src: git+https://github.com/kkdt/ansible-role-guest-additions.git
     scm: git
     version: master
+
+  - name: system-configure
+    src: git+https://github.com/kkdt/ansible-role-system-configure.git
+    scm: git
+    version: master
+
+  - name: system-clean
+    src: git+https://github.com/kkdt/ansible-role-system-clean.git
+    scm: git
+    version: master
+

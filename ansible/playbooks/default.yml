@@ -35,8 +35,8 @@
         VBoxGuestAdditions_iso_local: /Applications/VirtualBox.app/Contents/MacOS/VBoxGuestAdditions.iso
         VBoxGuestAdditions_iso_remote: /tmp/VBoxGuestAdditions.iso
         VBoxGuestAdditions_mnt: /mnt/iso
-    - role: configure
-    - role: clean
+    - role: system-configure
+    - role: system-clean
 
 - name: Red Hat Registration
   hosts: all
