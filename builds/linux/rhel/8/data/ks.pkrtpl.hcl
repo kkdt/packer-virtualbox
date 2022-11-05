@@ -90,7 +90,7 @@ logvol ${vm_logical_volumes.var.mount} --fstype=${vm_logical_volumes.var.fstype}
 logvol swap --name=swap --vgname=${vm_volgroup.name} --size=${vm_swap_size}
 
 ### Packages selection.
-%packages --ignoremissing --excludedocs
+%packages --excludedocs
 
 %{ for common_package in os_packages ~}
 ${common_package}

@@ -8,7 +8,6 @@ vm_swap_size = 2048
 
 os_packages = [
   "@core",
-  "@x11",
   "kernel",
   "kernel-headers",
   "kernel-devel",
