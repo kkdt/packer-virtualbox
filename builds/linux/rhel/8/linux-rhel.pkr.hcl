@@ -141,7 +141,9 @@ build {
     extra_arguments = [
       "-v",
       "--extra-vars", "rhsm_username=${var.rhsm_username}",
-      "--extra-vars", "rhsm_password=${var.rhsm_password}"
+      "--extra-vars", "rhsm_password=${var.rhsm_password}",
+      "--extra-vars", "ansible_scp_extra_args='${var.ansible_scp_extra_args}'",
+      "--extra-vars", "ansible_ssh_transfer_method=${var.ansible_ssh_transfer_method}"
     ]
   }
 
