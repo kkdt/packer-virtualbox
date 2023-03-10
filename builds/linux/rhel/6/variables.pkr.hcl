@@ -28,6 +28,24 @@ variable "ansible_requirements_yml" {
   description = "Path to Ansible requirements.yml file"
 }
 
+variable "ansible_scp_extra_args" {
+  type = string
+  description = "Used to pass into Ansible variable ANSIBLE_SCP_EXTRA_ARGS (ansible_scp_extra_args)"
+  default = "-O"
+}
+
+variable "ansible_ssh_args" {
+  type = string
+  description = "Used to pass into Ansible variable ANSIBLE_SSH_ARGS"
+  default = "-oHostKeyAlgorithms=+ssh-rsa -oPubkeyAcceptedKeyTypes=ssh-rsa"
+}
+
+variable "ansible_ssh_transfer_method" {
+  type = string
+  description = "Used to pass into Ansible variable ANSIBLE_SSH_TRANSFER_METHOD (ansible_ssh_transfer_method)"
+  default = "smart"
+}
+
 variable "vm_guest_os_language" {
   type = string
   description = "The guest operating system language."

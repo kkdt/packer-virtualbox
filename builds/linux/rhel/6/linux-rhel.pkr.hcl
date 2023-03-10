@@ -133,6 +133,7 @@ build {
     user = "${local.ansible_username}"
     ansible_env_vars = [
       "ANSIBLE_HOST_KEY_CHECKING=false",
+      "ANSIBLE_SSH_ARGS='${var.ansible_ssh_args}'",
       "ANSIBLE_LOG_PATH=ansible-${local.vm_id}.log",
       "ANSIBLE_STDOUT_CALLBACK=yaml",
       "ANSIBLE_ROLES_PATH=${path.cwd}/ansible/roles:${local.ansible_roles_path}",
@@ -141,7 +142,9 @@ build {
     extra_arguments = [
       "-v",
       "--extra-vars", "rhsm_username=${var.rhsm_username}",
-      "--extra-vars", "rhsm_password=${var.rhsm_password}"
+      "--extra-vars", "rhsm_password=${var.rhsm_password}",
+      "--extra-vars", "ansible_scp_extra_args='${var.ansible_scp_extra_args}'",
+      "--extra-vars", "ansible_ssh_transfer_method=${var.ansible_ssh_transfer_method}"
     ]
   }
 

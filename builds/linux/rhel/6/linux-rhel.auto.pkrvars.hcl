@@ -1,3 +1,5 @@
+ansible_ssh_transfer_method = "scp"
+
 vm_cpu_cores = 1
 # Amount of RAM in MB
 vm_mem_size = 2048
