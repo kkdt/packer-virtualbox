@@ -18,6 +18,12 @@ variable "config_id" {
   default = ""
 }
 
+variable "ansible_ssh_args" {
+  type = string
+  description = "Used to pass into Ansible variable ANSIBLE_SSH_ARGS"
+  default = "-oHostKeyAlgorithms=+ssh-rsa -oPubkeyAcceptedKeyTypes=ssh-rsa"
+}
+
 variable "ansible_playbook" {
   type = string
   description = "Path to Ansible playbook"

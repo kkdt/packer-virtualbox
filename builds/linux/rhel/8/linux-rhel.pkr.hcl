@@ -14,7 +14,6 @@ locals {
   build_date = formatdate("YYYY-MM-DD hh:mm ZZZ", timestamp())
   ssh_username = var.build_username == "" ? "root" : var.build_username
   ssh_password = var.build_username == "" ? var.root_password : var.build_password
-  ansible_username = local.ssh_username
   ansible_roles_path = pathexpand("${path.cwd}/.ansible-galaxy/roles")
   ansible_collections_path = pathexpand("${path.cwd}/.ansible-galaxy/collections")
   description = "Built on: ${local.build_date}\n${local.build_by}\nServer: ${var.server_name}\nISO: ${var.iso_file}\nGit Branch: ${var.git_branch} (${var.git_commit})\nGit URL: ${var.git_remote_url}\nBuilder: ${var.builder_info}"
@@ -130,9 +129,10 @@ build {
     galaxy_force_install = true
     galaxy_file = "${var.ansible_requirements_yml}"
     playbook_file = "${var.ansible_playbook}"
-    user = "${local.ansible_username}"
+    user = "${local.ssh_username}"
     ansible_env_vars = [
       "ANSIBLE_HOST_KEY_CHECKING=false",
+      "ANSIBLE_SSH_ARGS='${var.ansible_ssh_args}'",
       "ANSIBLE_LOG_PATH=ansible-${local.vm_id}.log",
       "ANSIBLE_STDOUT_CALLBACK=yaml",
       "ANSIBLE_ROLES_PATH=${path.cwd}/ansible/roles:${local.ansible_roles_path}",
