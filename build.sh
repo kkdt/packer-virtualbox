@@ -53,6 +53,11 @@ while [ "$1" != "" ]; do
       __input_os="$1"
       __var_files="-var-file=${__input_path}/versions/rhel8.6.pkrvars.hcl"
       ;;
+    rhel8.7)
+      __input_path="${__directory}/builds/linux/rhel/8/"
+      __input_os="$1"
+      __var_files="-var-file=${__input_path}/versions/rhel8.7.pkrvars.hcl"
+      ;;
     rhel6.7)
       __input_path="${__directory}/builds/linux/rhel/6/"
       __input_os="$1"

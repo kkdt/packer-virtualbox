@@ -38,7 +38,7 @@ The following builds are supported under this project:
 **Host Operating Systems**:
 
 * Ubuntu Server 22.04 LTS and 20.04 LTS
-* macOS Monterey (Intel)
+* macOS Monterey (Intel), Ventura (Intel)
 
     > **Note**
     >
@@ -219,6 +219,15 @@ virtual machine system.
   </details>
 
 * <details>
+    <summary>Red Hat 8.6</summary>
+
+    ```shell
+    ./build.sh --secrets config/secrets.pkrvars.hcl --os rhel8.6
+    ```
+  </details>
+
+
+* <details>
     <summary>Red Hat 6 (latest with Red Hat subscription)</summary>
 
     ```shell
@@ -230,7 +239,7 @@ virtual machine system.
     <summary>Red Hat 8 (latest with Red Hat subscription)</summary>
 
     ```shell
-    ./build.sh --secrets config/secrets.pkrvars.hcl --os rhel8.6
+    ./build.sh --secrets config/secrets.pkrvars.hcl --os rhel8.7
     ```
   </details>
 
