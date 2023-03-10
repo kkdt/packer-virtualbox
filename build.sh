@@ -12,6 +12,7 @@ function help() {
   echo "  --configs          (optional) Path to directory containing configurations"
   echo "  --output-directory (optional) Full path to the output directory, default ./dist"
   echo "  --details          (optional) Include additional metadata for the box image"
+  echo "  --abort-on-error   (optional) Leave the virtual machine intact on error"
 }
 
 set -e
@@ -26,6 +27,7 @@ __output_directory="${__directory}/dist"
 __configs=""
 __builder_info=""
 __secrets=""
+__packer_opts=""
 __var_files=""
 __var_files_overrides="
 build.pkrvars.hcl
@@ -97,6 +99,10 @@ while [ "$1" != "" ]; do
       echo "Error: Invalid configuration directory $1"
       exit 1
     fi
+    ;;
+
+  --abort-on-error)
+    __packer_opts="--on-error=abort"
     ;;
 
   h|-h|--h|help|-help|--help)
@@ -241,7 +247,7 @@ packer init "${__input_path}"
 
 echo "Building...."
 
-packer build -force \
+packer build -force ${__packer_opts} \
   -var "build_script_username=${USER}" \
   -var "builder_info=${__builder_info}" \
   -var "build_script_output_directory=${__output_directory}" \
