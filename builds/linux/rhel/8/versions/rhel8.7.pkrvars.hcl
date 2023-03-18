@@ -4,3 +4,6 @@ iso_path = "config/iso"
 iso_file = "rhel-8.7-x86_64-dvd.iso"
 iso_checksum_type = "sha256"
 iso_checksum_value = "a6a7418a75d721cc696d3cbdd648b5248808e7fef0f8742f518e43b46fa08139"
+
+# Set to true to have DVD contents install as a local YUM repo
+build_with_dvd_contents = false

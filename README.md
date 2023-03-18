@@ -211,6 +211,14 @@ virtual machine system.
   </details>
 
 * <details>
+    <summary>Red Hat 6.9</summary>
+
+    ```shell
+    ./build.sh --secrets config/secrets.pkrvars.hcl --os rhel6.9
+    ```
+  </details>
+
+* <details>
     <summary>Red Hat 8.5</summary>
 
     ```shell
@@ -228,21 +236,20 @@ virtual machine system.
 
 
 * <details>
-    <summary>Red Hat 6 (latest with Red Hat subscription)</summary>
-
-    ```shell
-    ./build.sh --secrets config/secrets.pkrvars.hcl --os rhel6.9
-    ```
-  </details>
-
-* <details>
-    <summary>Red Hat 8 (latest with Red Hat subscription)</summary>
+    <summary>Red Hat 8.7</summary>
 
     ```shell
     ./build.sh --secrets config/secrets.pkrvars.hcl --os rhel8.7
     ```
   </details>
 
+* <details>
+    <summary>Red Hat 8.9</summary>
+
+    ```shell
+    ./build.sh --secrets config/secrets.pkrvars.hcl --os rhel8.9
+    ```
+  </details>
 
 * <details>
     <summary>Red Hat 6.7 (external configs)</summary>
