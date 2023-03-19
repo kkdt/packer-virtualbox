@@ -27,6 +27,7 @@ locals {
       vm_guest_os_timezone = var.vm_guest_os_timezone,
       os_packages = var.os_packages,
       vm_packages = var.vm_packages,
+      vm_modules = var.vm_modules,
       vm_reboot_halt_shutdown_command = var.vm_reboot_halt_shutdown_command,
       vm_disk_partitions = var.vm_disk_partitions,
       vm_volgroup = var.vm_volgroup,

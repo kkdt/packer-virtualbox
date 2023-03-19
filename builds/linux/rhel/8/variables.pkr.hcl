@@ -289,6 +289,12 @@ variable "vm_packages" {
   default = []
 }
 
+variable "vm_modules" {
+  type = list(string)
+  description = "VM-specific OS modules"
+  default = []
+}
+
 variable "build_script_username" {
   type = string
   description = "The user that kicked off the build"

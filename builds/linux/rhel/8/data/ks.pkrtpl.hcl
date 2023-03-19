@@ -112,6 +112,13 @@ ${package}
 
 %end
 
+### Red Hat Modules
+# module --name=NAME [--stream=STREAM]
+# - Command: yum module list <module>
+%{ for module in vm_modules ~}
+module --name=${module}
+%{ endfor ~}
+
 ### Post-installation commands.
 %post --log=/root/kickstart-post.log
 echo "Updating /etc/ssh/sshd_config to allow root login"
