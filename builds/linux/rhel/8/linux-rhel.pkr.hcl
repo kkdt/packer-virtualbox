@@ -96,7 +96,7 @@ source "virtualbox-iso" "linux-rhel" {
     ["modifyvm", "{{ .Name }}", "--graphicscontroller", "${var.virtualbox_graphics_controller_mode}"],
     
     # https://github.com/hashicorp/packer/issues/12118
-    ["modifyvm", "{{.Name}}", "--nat-localhostreachable1", "on"],
+    ["modifyvm", "{{.Name}}", "--nat-localhostreachable1", "on"]
   ]
 
   skip_export = var.virtualbox_skip_export

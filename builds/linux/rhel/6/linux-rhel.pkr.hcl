@@ -93,7 +93,10 @@ source "virtualbox-iso" "linux-rhel" {
     ["modifyvm", "{{ .Name }}", "--audio", "${var.virtualbox_audio_mode}"],
     ["modifyvm", "{{ .Name }}", "--vrde", "${var.virtualbox_vrde_mode}"],
     ["modifyvm", "{{ .Name }}", "--vram", "${var.virtualbox_vram_mode}"],
-    ["modifyvm", "{{ .Name }}", "--graphicscontroller", "${var.virtualbox_graphics_controller_mode}"]
+    ["modifyvm", "{{ .Name }}", "--graphicscontroller", "${var.virtualbox_graphics_controller_mode}"],
+
+    # https://github.com/hashicorp/packer/issues/12118
+    ["modifyvm", "{{.Name}}", "--nat-localhostreachable1", "on"]
   ]
 
   skip_export = var.virtualbox_skip_export
