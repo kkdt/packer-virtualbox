@@ -50,7 +50,7 @@ vm_logical_volumes = {
     mount = "/home",
     name = "home",
     fstype = "ext4",
-    size = 1024,
+    size = 5120,
     grow = false,
     fsoptions = "nodev"
   },
@@ -58,7 +58,7 @@ vm_logical_volumes = {
     mount = "/tmp",
     name = "tmp",
     fstype = "ext4",
-    size = 1024,
+    size = 3072,
     grow = false,
     fsoptions = "nodev,nosuid"
   },

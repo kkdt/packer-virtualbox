@@ -7,3 +7,6 @@ iso_checksum_value = "8cb0dfacc94b789933253d5583a2fb7afce26d38d75be7c204975fe20b
 
 # Set to true to have DVD contents install as a local YUM repo
 build_with_dvd_contents = false
+
+# build version added to the .box filename
+build_version = 1.0.0

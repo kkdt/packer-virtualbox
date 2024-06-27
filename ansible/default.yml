@@ -30,11 +30,6 @@
         vagrant_username: vagrant
         vagrant_group: vagrant
         vagrant_password: "$1$booW/uzn$AB3hLhngw5B0TkNd5L1ZQ/"
-    - role: virtualbox-guest-additions
-      vars:
-        VBoxGuestAdditions_iso_local: /Applications/VirtualBox.app/Contents/MacOS/VBoxGuestAdditions.iso
-        VBoxGuestAdditions_iso_remote: /tmp/VBoxGuestAdditions.iso
-        VBoxGuestAdditions_mnt: /mnt/iso
     - role: system-configure
     - role: system-clean
 
