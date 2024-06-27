@@ -1,7 +1,7 @@
 # HashiCorp Packer, Oracle VirtualBox, and Vagrant Build Virtual Machine Images
 
 > All credits go to the VMware Open Source team for providing the foundation for infrastructure-as-code to automate the creation of virtual machine images in [packer-examples-for-vsphere][packer-examples-for-vsphere].
-> This project will no longer receive updates from the parent fork past commit [1472998](https://github.com/kkdt/packer-virtualbox/commit/147299898a844cdd9e64b93a05591ba5f427badc). 
+> This project will no longer receive updates from the parent fork past commit [1472998](https://github.com/kkdt/packer-virtualbox/commit/147299898a844cdd9e64b93a05591ba5f427badc).
 
 ## Table of Contents
 
@@ -15,11 +15,11 @@
 ## Introduction
 
 This repository provides infrastructure-as-code to automate the creation of virtual machine images and their guest operating
-systems on [Oracle VirtualBox][oracle-virtualbox] using [HashiCorp Packer][packer] and the [Packer Plugin for VirtualBox][packer-plugin-virtualbox-docs] 
-(`virtualbox-iso`). 
+systems on [Oracle VirtualBox][oracle-virtualbox] using [HashiCorp Packer][packer] and the [Packer Plugin for VirtualBox][packer-plugin-virtualbox-docs]
+(`virtualbox-iso`).
 
-By default, the machine image artifacts are created by the [Packer Vagrant Post-Processor][packer-vagrant-post-processor] 
-and stored on the local file system at a configurable location. If items of the same name exists in the target location, 
+By default, the machine image artifacts are created by the [Packer Vagrant Post-Processor][packer-vagrant-post-processor]
+and stored on the local file system at a configurable location. If items of the same name exists in the target location,
 then Packer will replace the existing item.
 
 The following builds are supported under this project:
@@ -64,7 +64,7 @@ The following builds are supported under this project:
   > **Note**
   >
   > Click on the operating system name to display the installation steps.
-  > 
+  >
   > macOS is locked to Packer 1.8.3 below.
 
   * <details>
@@ -168,9 +168,9 @@ Use the default configurations to build a Red Hat Vagrant/VirtualBox image.
 > **Note**
 >
 > The entire 'config' directory will be ignored by Git.
-> 
+>
 > The secrets.pkrvars.hcl file will create systems with a root password of `helloworld`.
-> 
+>
 > You will need to provide your Red Hat subscription in secrets.pkrvars.hcl if you want to build the latest Red Hat 6 and 8 systems.
 
 ### Variables Files
@@ -180,7 +180,7 @@ provide an `*.auto.pkrvars.hcl` file that Packer automatically loads for each bu
 own build values. The automatic build values establish the "default" virtual machine state for each build - OS packages,
 disk partitions, etc. of the final Vagrant virtual machine box image.
 
-This project will read variables from the files below. These files provide logical grouping for build variables rather 
+This project will read variables from the files below. These files provide logical grouping for build variables rather
 than having all variables in a single HCL file.
 
 1. build.pkrvars.hcl - Build settings
@@ -262,6 +262,15 @@ virtual machine system.
 ## Troubleshoot
 
 * Read [Debugging Packer Builds][packer-debug].
+* For macOS hosts, after a VirtualBox or Vagrant upgrade, go to System Settings > Privacy and Security
+  <details>
+    <summary>Privacy and Security</summary>
+
+    1. Enable the Oracle extensions
+    1. Go to Profiles > Ensure Oracle VirtualBox VM is listed
+    1. Restart laptop
+    
+  </details>
 
 ## Credits
 
