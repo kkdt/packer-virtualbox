@@ -38,7 +38,7 @@ The following builds are supported under this project:
 **Host Operating Systems**:
 
 * Ubuntu Server 22.04 LTS and 20.04 LTS
-* macOS Ventura (Intel)
+* macOS Sonoma 14.5 (Intel)
 
     > **Note**
     >
