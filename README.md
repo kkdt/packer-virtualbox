@@ -265,9 +265,9 @@ virtual machine system.
 * For macOS hosts, after a VirtualBox or Vagrant upgrade, go to System Settings > Privacy and Security
   <details>
     <summary>Privacy and Security</summary>
-    # Enable the Oracle extensions
-    # Go to Profiles > Ensure Oracle VirtualBox VM is listed
-    # Restart laptop
+    1. Enable the Oracle extensions
+    1. Go to Profiles > Ensure Oracle VirtualBox VM is listed
+    1. Restart laptop
   </details>
 
 ## Credits
