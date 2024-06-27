@@ -262,14 +262,15 @@ virtual machine system.
 ## Troubleshoot
 
 * Read [Debugging Packer Builds][packer-debug].
-* For macOS hosts, after a VirtualBox or Vagrant upgrade, go to System Settings > Privacy and Security
+* For macOS hosts, after an operating system upgrade, go to System Settings > Privacy and Security
   <details>
     <summary>Privacy and Security</summary>
 
     1. Enable the Oracle extensions
     1. Go to Profiles > Ensure Oracle VirtualBox VM is listed
     1. Restart laptop
-    
+    1. Worst case scenario - reinstall VirtualBox and VirtualBox Extension Pack
+
   </details>
 
 ## Credits
