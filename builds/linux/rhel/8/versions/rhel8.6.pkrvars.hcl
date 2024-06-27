@@ -9,4 +9,4 @@ iso_checksum_value = "8cb0dfacc94b789933253d5583a2fb7afce26d38d75be7c204975fe20b
 build_with_dvd_contents = false
 
 # build version added to the .box filename
-build_version = 1.0.0
+build_version = "1.0.0"
