@@ -1,7 +1,7 @@
 ---
 collections:
   - name: "community.general"
-    version: ">=5.7.0"
+    version: "=5.6.0"
     type: galaxy
 
 roles:
@@ -23,4 +23,3 @@ roles:
     src: git+https://github.com/kkdt/ansible-role-system-clean.git
     scm: git
     version: master
-
