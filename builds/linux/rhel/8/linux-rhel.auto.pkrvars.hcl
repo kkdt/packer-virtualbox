@@ -4,9 +4,9 @@ vm_cpu_cores = 1
 # Amount of RAM in MB
 vm_mem_size = 2048
 # The size of the disk in MB
-vm_disk_size = 40960
+vm_disk_size = 61440
 # Swap size in MB
-vm_swap_size = 2048
+vm_swap_size = 5120
 
 os_packages = [
   "@core",
@@ -58,7 +58,7 @@ vm_logical_volumes = {
     mount = "/tmp",
     name = "tmp",
     fstype = "ext4",
-    size = 3072,
+    size = 5120,
     grow = false,
     fsoptions = "nodev,nosuid"
   },
@@ -66,7 +66,7 @@ vm_logical_volumes = {
     mount = "/var",
     name = "var",
     fstype = "ext4",
-    size = 3072,
+    size = 5120,
     grow = false,
     fsoptions = "nodev"
   }
